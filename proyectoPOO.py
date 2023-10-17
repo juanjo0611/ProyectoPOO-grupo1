@@ -4,7 +4,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import messagebox as mssg
 import sqlite3
-
+#prueba
 class Inventario:
   def __init__(self, master=None):
     self.path = r'X:/Users/ferna/Documents/UNal/Alumnos/2023_S2/ProyInventario'
