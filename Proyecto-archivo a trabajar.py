@@ -4,10 +4,10 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import messagebox as mssg
 import sqlite3
-#prueba
+
 class Inventario:
   def __init__(self, master=None):
-    self.path = r'X:/Users/ferna/Documents/UNal/Alumnos/2023_S2/ProyInventario'
+    self.path = r'/Users/farukpolania/VSC/ProyectoPOO'
     self.db_name = self.path + r'/Inventario.db'
     ancho=830;alto=840 # Dimensione de la pantalla
     actualiza = None
@@ -15,8 +15,8 @@ class Inventario:
     # Crea ventana principal
     self.win = tk.Tk() 
     self.win.geometry(f"{ancho}x{alto}")
-    self.win.iconbitmap("f2.ico")
-    self.win.resizable(False, False)
+    self.win.iconbitmap("/Users/farukpolania/VSC/ProyectoPOO/f2.ico") 
+    self.win.resizable(True, True)
     self.win.title("Manejo de Proveedores") 
 
     #Centra la pantalla
@@ -40,7 +40,7 @@ class Inventario:
 
     #Captura IdNit del Proveedor
     self.idNit = ttk.Entry(self.frm1)
-    self.idNit.configure(takefocus=True)
+    self.idNit.configure(takefocus=True)# state = 'readonly')
     self.idNit.place(anchor="nw", x=50, y=40)
     self.idNit.bind("<Key>", self.validaIdNit)
     self.idNit.bind("<BackSpace>", lambda _:self.idNit.delete(len(self.idNit.get())),'end')
@@ -77,7 +77,7 @@ class Inventario:
 
     #Captura el código del Producto
     self.codigo = ttk.Entry(self.frm1)
-    self.codigo.configure(width=13)
+    self.codigo.configure(width=13)# state = 'readonly')
     self.codigo.place(anchor="nw", x=60, y=120)
 
     #Etiqueta descripción del Producto
@@ -168,7 +168,7 @@ class Inventario:
     self.treeProductos.heading("Fecha",       anchor="center", text='Fecha')
 
     #Carga los datos en treeProductos
-    self.lee_treeProductos() 
+    #self.lee_treeProductos() 
     self.treeProductos.place(anchor="nw", height=560, width=790, x=2, y=230)
 
     #Scrollbar en el eje Y de treeProductos
@@ -207,7 +207,7 @@ class Inventario:
 
     #Botón para cancelar una operación
     self.btnCancelar = ttk.Button(self.frm2)
-    self.btnCancelar.configure(text='Cancelar', width=80,command = self.limpiaCampos)
+    self.btnCancelar.configure(text='Cancelar', width=80, command = self.limpiaCampos)
     self.btnCancelar.place(anchor="nw", width=70, x=500, y=10)
 
     #Ubicación del Frame 2
@@ -275,7 +275,7 @@ class Inventario:
     ''' Carga los datos y Limpia la Tabla tablaTreeView '''
     tabla_TreeView = self.treeProductos.get_children()
     for linea in tabla_TreeView:
-        self.treeProductos.delete(linea) # Límpia la filas del TreeView
+        self.treeProductos.delete(linea) # Limpia la filas del TreeView
     
     # Seleccionando los datos de la BD
     query = '''SELECT * from Proveedor INNER JOIN Inventario WHERE idNitProv = idNit ORDER BY idNitProv'''
@@ -300,8 +300,18 @@ class Inventario:
           
   def adiciona_Registro(self, event=None):
     '''Adiciona un producto a la BD si la validación es True'''
+    # Obtener los valores de los campos de entrada
+    id_nit = self.idNit.get()
+    razon_social = self.razonSocial.get()
+    ciudad = self.ciudad.get()
+    codigo = self.codigo.get()
+    descripcion = self.descripcion.get()
+    unidad = self.unidad.get()
+    cantidad = self.cantidad.get()
+    precio = self.precio.get()
+    fecha = self.fecha.get()
     pass
-
+   
   def editaTreeProveedores(self, event=None):
     ''' Edita una tupla del TreeView'''
     pass
