@@ -321,6 +321,14 @@ class Inventario:
   def eliminaRegistro(self, event=None):
     '''Elimina un Registro en la BD'''
     pass
+  def accion_Buscar(seleccion,tabla,condicion):
+    search='''SELECT ? FROM ? WHERE ? '''
+    resultado=run_Query(search,(selection,tabla,condicion)
+    return resultado
+  def validar_ID():
+    id=self.idNit.get()
+    search_id=self.accion_Buscar('*','Proveedor',f'idNit={id}')
+    if 
   
 
 if __name__ == "__main__":
