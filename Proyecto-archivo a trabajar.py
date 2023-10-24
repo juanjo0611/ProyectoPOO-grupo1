@@ -4,18 +4,20 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import messagebox as mssg
 import sqlite3
+from os import path
 
 class Inventario:
   def __init__(self, master=None):
-    self.path = r'/Users/farukpolania/VSC/ProyectoPOO'
+    self.path = str(path.dirname(__file__))
     self.db_name = self.path + r'/Inventario.db'
+    self.ico=self.path + r'/f2.ico'
     ancho=830;alto=840 # Dimensione de la pantalla
     actualiza = None
 
     # Crea ventana principal
     self.win = tk.Tk() 
     self.win.geometry(f"{ancho}x{alto}")
-    self.win.iconbitmap("/Users/farukpolania/VSC/ProyectoPOO/f2.ico") 
+    self.win.iconbitmap(self.ico) 
     self.win.resizable(True, True)
     self.win.title("Manejo de Proveedores") 
 
