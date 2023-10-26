@@ -4,18 +4,20 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import messagebox as mssg
 import sqlite3
+from os import path
 
 class Inventario:
   def __init__(self, master=None):
-    self.path = r'/Users/farukpolania/VSC/ProyectoPOO'
+    self.path = str(path.dirname(__file__))
     self.db_name = self.path + r'/Inventario.db'
+    self.ico=self.path + r'/f2.ico'
     ancho=830;alto=840 # Dimensione de la pantalla
     actualiza = None
 
     # Crea ventana principal
     self.win = tk.Tk() 
     self.win.geometry(f"{ancho}x{alto}")
-    self.win.iconbitmap("/Users/farukpolania/VSC/ProyectoPOO/f2.ico") 
+    self.win.iconbitmap(self.ico) 
     self.win.resizable(True, True)
     self.win.title("Manejo de Proveedores") 
 
@@ -319,6 +321,27 @@ class Inventario:
   def eliminaRegistro(self, event=None):
     '''Elimina un Registro en la BD'''
     pass
+  def accion_Buscar(self,seleccion,tabla,condicion):
+    search='''SELECT ? FROM ? WHERE ? '''
+    resultado=self.run_Query(search,(seleccion,tabla,condicion))
+    return resultado
+  def validar_ID(self):
+    id=self.idNit.get()
+    search_id=self.accion_Buscar('*','Proveedor',f'idNitProv={id}').fetchone()
+    if search_id==None :
+      prov_Exist=False
+    else:
+       prov_Exist=True
+    return prov_Exist
+  def validar_Codigo(self):
+     codigo=self.codigo.get()
+     search_id=self.accion_Buscar('*','Producto',f'Codigo={codigo}').fetchone()
+     if search_id==None :
+        cod_Exist=False
+     else:
+        cod_Exist=True
+     return cod_Exist
+  
   
 
 if __name__ == "__main__":
