@@ -360,7 +360,7 @@ class Inventario:
      elif self.idNit.get()!= "" and self.codigo.get()!="":
         if self.validar_ID()==True and self.validar_Codigo()==True:
            search=self.accion_Buscar("*","Proveedor INNER JOIN Producto", f"Codigo={self.codigo.get() } AND IdNit= {self.idNit.get()} AND idNitProv=IdNit").fetchall()
-           if search == None:
+           if search == []:
               mssg.showerror('Atención!!','.. ¡El producto no corresponde al proveedor indicado! ..')
            else: 
               self.lee_treeProductos(search)
