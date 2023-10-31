@@ -273,16 +273,16 @@ class Inventario:
         conn.commit()
     return result
 
-  def lee_treeProductos(self, db_rows):
+  def lee_treeProductos(self):
     ''' Carga los datos y Limpia la Tabla tablaTreeView '''
     tabla_TreeView = self.treeProductos.get_children()
     for linea in tabla_TreeView:
         self.treeProductos.delete(linea) # Limpia la filas del TreeView
-    '''
+    
     # Seleccionando los datos de la BD
     query = SELECT * from Proveedor INNER JOIN Inventario WHERE idNitProv = idNit ORDER BY idNitProv
     db_rows = self.run_Query(query).fetchall # db_rows contine la vista del query
-    '''
+    
 
     # Insertando los datos de la BD en treeProductos de la pantalla
     for row in db_rows:
@@ -290,7 +290,7 @@ class Inventario:
 
     ''' Al final del for row queda con la última tupla
         y se usan para cargar las variables de captura
-    
+    '''
     self.idNit.insert(0,row[0])
     self.razonSocial.insert(0,row[1])
     self.ciudad.insert(0,row[2])
@@ -300,7 +300,18 @@ class Inventario:
     self.cantidad.insert(0,row[7])
     self.precio.insert(0,row[8])
     self.fecha.insert(0,row[9])  
-    '''
+    
+  def limpiar_treeview(self)
+    tabla_TreeView = self.treeProductos.get_children()
+    for linea in tabla_TreeView:
+        self.treeProductos.delete(linea)
+  def cargar_datos_treeview(self,db_rows)
+      for row in db_rows:
+         self.treeProductos.insert('',0, text = row[0], values = [row[1],row[2],row[3],row[4],row[5],row[6]])
+  def cargar_datos_buscados(self,search):
+      self.limpiar_treeview()
+      self.cargar_datos_treeview(search)
+      
           
   def adiciona_Registro(self, event=None):
     '''Adiciona un producto a la BD si la validación es True'''
@@ -346,24 +357,23 @@ class Inventario:
   def button_buscar(self):
      if self.idNit.get()!= "" and self.codigo.get()=="":
         if self.validar_ID()==True:
-          search=self.accion_Buscar("*","Proveedor INNER JOIN Producto", f"idNitProv={self.idNit.get() } AND idNitProv=IdNit").fetchall()
-          self.lee_treeProductos(search)
+          search=self.accion_Buscar("*","Producto", f"IdNit={self.idNit.get() } ").fetchall()
+          self.cargar_datos_buscados(search)
         else:
            mssg.showerror('Atención!!','.. ¡El proveedor no existe! ..')
      elif self.idNit.get()== "" and self.codigo.get()!="":
         if self.validar_Codigo()==True:
-           search=self.accion_Buscar("*","Proveedor INNER JOIN Producto", f"Codigo={self.codigo.get() } AND idNitProv=IdNit").fetchall()
-           print(search)
-           self.lee_treeProductos(search)
+           search=self.accion_Buscar("*","Producto", f"Codigo={self.codigo.get() } ").fetchall()
+           self.cargar_datos_buscados(search)
         else:
            mssg.showerror('Atención!!','.. ¡El producto no existe! ..')
      elif self.idNit.get()!= "" and self.codigo.get()!="":
         if self.validar_ID()==True and self.validar_Codigo()==True:
-           search=self.accion_Buscar("*","Proveedor INNER JOIN Producto", f"Codigo={self.codigo.get() } AND IdNit= {self.idNit.get()} AND idNitProv=IdNit").fetchall()
+           search=self.accion_Buscar("*","Producto", f"Codigo={self.codigo.get() } AND IdNit= {self.idNit.get()} ").fetchall()
            if search == []:
               mssg.showerror('Atención!!','.. ¡El producto no corresponde al proveedor indicado! ..')
            else: 
-              self.lee_treeProductos(search)
+              self.cargar_datos_buscados(search)
         elif self.validar_ID()==True and self.validar_Codigo()==False:
            mssg.showerror('Atención!!','.. ¡El producto no existe! ..')
         elif self.validar_ID()==False and self.validar_Codigo()==True:
