@@ -280,7 +280,7 @@ class Inventario:
         self.treeProductos.delete(linea) # Limpia la filas del TreeView
     
     # Seleccionando los datos de la BD
-    query = SELECT * from Proveedor INNER JOIN Inventario WHERE idNitProv = idNit ORDER BY idNitProv
+    query = '''SELECT * from Proveedor INNER JOIN Inventario WHERE idNitProv = idNit ORDER BY idNitProv'''
     db_rows = self.run_Query(query).fetchall # db_rows contine la vista del query
     
 
@@ -301,11 +301,11 @@ class Inventario:
     self.precio.insert(0,row[8])
     self.fecha.insert(0,row[9])  
     
-  def limpiar_treeview(self)
+  def limpiar_treeview(self):
     tabla_TreeView = self.treeProductos.get_children()
     for linea in tabla_TreeView:
         self.treeProductos.delete(linea)
-  def cargar_datos_treeview(self,db_rows)
+  def cargar_datos_treeview(self,db_rows):
       for row in db_rows:
          self.treeProductos.insert('',0, text = row[0], values = [row[1],row[2],row[3],row[4],row[5],row[6]])
   def cargar_datos_buscados(self,search):
@@ -354,26 +354,50 @@ class Inventario:
      else:
         cod_Exist=True
      return cod_Exist
+  
+  def cargar_proveedor(self, id):
+     proveedor=self.accion_Buscar("*","Proveedor",f"idNitProv={id}").fetchone()
+     self.idNit.insert(0,proveedor[0])
+     self.razonSocial.insert(0,proveedor[1])
+     self.ciudad.insert(0, proveedor[2])
+  
+  def cargar_producto(self,producto):
+     self.codigo.insert(0,producto[1])
+     self.descripcion.insert(0,producto[2])
+     self.unidad.insert(0,producto[3])
+     self.cantidad.insert(0,producto[4])
+     self.precio.insert(0,producto[5])
+     self.fecha.insert(0,producto[6])
+
+     
   def button_buscar(self):
      if self.idNit.get()!= "" and self.codigo.get()=="":
         if self.validar_ID()==True:
           search=self.accion_Buscar("*","Producto", f"IdNit={self.idNit.get() } ").fetchall()
           self.cargar_datos_buscados(search)
+          self.limpiaCampos()
+          self.cargar_proveedor(search[0][0])
         else:
            mssg.showerror('Atención!!','.. ¡El proveedor no existe! ..')
      elif self.idNit.get()== "" and self.codigo.get()!="":
         if self.validar_Codigo()==True:
            search=self.accion_Buscar("*","Producto", f"Codigo={self.codigo.get() } ").fetchall()
            self.cargar_datos_buscados(search)
+           self.limpiaCampos()
+           self.cargar_proveedor(search[0][0])
+           self.cargar_producto(search[0])
         else:
            mssg.showerror('Atención!!','.. ¡El producto no existe! ..')
      elif self.idNit.get()!= "" and self.codigo.get()!="":
         if self.validar_ID()==True and self.validar_Codigo()==True:
            search=self.accion_Buscar("*","Producto", f"Codigo={self.codigo.get() } AND IdNit= {self.idNit.get()} ").fetchall()
-           if search == []:
+           if search == None:
               mssg.showerror('Atención!!','.. ¡El producto no corresponde al proveedor indicado! ..')
            else: 
               self.cargar_datos_buscados(search)
+              self.limpiaCampos()
+              self.cargar_proveedor(search[0][0])
+              self.cargar_producto(search[0])
         elif self.validar_ID()==True and self.validar_Codigo()==False:
            mssg.showerror('Atención!!','.. ¡El producto no existe! ..')
         elif self.validar_ID()==False and self.validar_Codigo()==True:
