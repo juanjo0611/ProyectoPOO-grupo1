@@ -4,18 +4,20 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import messagebox as mssg
 import sqlite3
+from os import path
 
 class Inventario:
   def __init__(self, master=None):
-    self.path = r'/Users/farukpolania/VSC/ProyectoPOO'
+    self.path = str(path.dirname(__file__))
     self.db_name = self.path + r'/Inventario.db'
+    self.ico=self.path + r'/f2.ico'
     ancho=830;alto=840 # Dimensione de la pantalla
     actualiza = None
 
     # Crea ventana principal
     self.win = tk.Tk() 
     self.win.geometry(f"{ancho}x{alto}")
-    self.win.iconbitmap("/Users/farukpolania/VSC/ProyectoPOO/f2.ico") 
+    self.win.iconbitmap(self.ico) 
     self.win.resizable(True, True)
     self.win.title("Manejo de Proveedores") 
 
@@ -187,7 +189,7 @@ class Inventario:
 
     #Botón para Buscar un Proveedor
     self.btnBuscar = ttk.Button(self.frm2)
-    self.btnBuscar.configure(text='Buscar')
+    self.btnBuscar.configure(text='Buscar',command= self.button_buscar)
     self.btnBuscar.place(anchor="nw", width=70, x=200, y=10)
 
     #Botón para Guardar los datos
@@ -278,9 +280,10 @@ class Inventario:
         self.treeProductos.delete(linea) # Limpia la filas del TreeView
     
     # Seleccionando los datos de la BD
-    query = '''SELECT * from Proveedor INNER JOIN Inventario WHERE idNitProv = idNit ORDER BY idNitProv'''
-    db_rows = self.run_Query(query) # db_rows contine la vista del query
-      
+    query = SELECT * from Proveedor INNER JOIN Inventario WHERE idNitProv = idNit ORDER BY idNitProv
+    db_rows = self.run_Query(query).fetchall # db_rows contine la vista del query
+    
+
     # Insertando los datos de la BD en treeProductos de la pantalla
     for row in db_rows:
       self.treeProductos.insert('',0, text = row[0], values = [row[4],row[5],row[6],row[7],row[8],row[9]])
@@ -297,6 +300,18 @@ class Inventario:
     self.cantidad.insert(0,row[7])
     self.precio.insert(0,row[8])
     self.fecha.insert(0,row[9])  
+    
+  def limpiar_treeview(self)
+    tabla_TreeView = self.treeProductos.get_children()
+    for linea in tabla_TreeView:
+        self.treeProductos.delete(linea)
+  def cargar_datos_treeview(self,db_rows)
+      for row in db_rows:
+         self.treeProductos.insert('',0, text = row[0], values = [row[1],row[2],row[3],row[4],row[5],row[6]])
+  def cargar_datos_buscados(self,search):
+      self.limpiar_treeview()
+      self.cargar_datos_treeview(search)
+      
           
   def adiciona_Registro(self, event=None):
     '''Adiciona un producto a la BD si la validación es True'''
@@ -319,7 +334,54 @@ class Inventario:
   def eliminaRegistro(self, event=None):
     '''Elimina un Registro en la BD'''
     pass
-  
+  def accion_Buscar(self,seleccion,tabla,condicion):
+    search=f'''SELECT {seleccion} FROM {tabla} WHERE {condicion}'''
+    resultado=self.run_Query(search)
+    return resultado
+  def validar_ID(self):
+    id=self.idNit.get()
+    search_id=self.accion_Buscar('*','Proveedor',f'idNitProv={id}').fetchone()
+    if search_id==None :
+      prov_Exist=False
+    else:
+       prov_Exist=True
+    return prov_Exist
+  def validar_Codigo(self):
+     codigo=self.codigo.get()
+     search_id=self.accion_Buscar('*','Producto',f'Codigo={codigo}').fetchone()
+     if search_id==None :
+        cod_Exist=False
+     else:
+        cod_Exist=True
+     return cod_Exist
+  def button_buscar(self):
+     if self.idNit.get()!= "" and self.codigo.get()=="":
+        if self.validar_ID()==True:
+          search=self.accion_Buscar("*","Producto", f"IdNit={self.idNit.get() } ").fetchall()
+          self.cargar_datos_buscados(search)
+        else:
+           mssg.showerror('Atención!!','.. ¡El proveedor no existe! ..')
+     elif self.idNit.get()== "" and self.codigo.get()!="":
+        if self.validar_Codigo()==True:
+           search=self.accion_Buscar("*","Producto", f"Codigo={self.codigo.get() } ").fetchall()
+           self.cargar_datos_buscados(search)
+        else:
+           mssg.showerror('Atención!!','.. ¡El producto no existe! ..')
+     elif self.idNit.get()!= "" and self.codigo.get()!="":
+        if self.validar_ID()==True and self.validar_Codigo()==True:
+           search=self.accion_Buscar("*","Producto", f"Codigo={self.codigo.get() } AND IdNit= {self.idNit.get()} ").fetchall()
+           if search == []:
+              mssg.showerror('Atención!!','.. ¡El producto no corresponde al proveedor indicado! ..')
+           else: 
+              self.cargar_datos_buscados(search)
+        elif self.validar_ID()==True and self.validar_Codigo()==False:
+           mssg.showerror('Atención!!','.. ¡El producto no existe! ..')
+        elif self.validar_ID()==False and self.validar_Codigo()==True:
+           mssg.showerror('Atención!!','.. ¡El proveedor no existe! ..')
+        elif self.validar_ID()==False and self.validar_Codigo()==False:
+           mssg.showerror('Atención!!','.. ¡Ni el producto, ni el proveedor existen! ..')
+           
+
 
 if __name__ == "__main__":
     app = Inventario()
