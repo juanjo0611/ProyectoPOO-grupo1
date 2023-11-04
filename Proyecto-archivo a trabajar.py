@@ -1,16 +1,16 @@
-!/usr/bin/python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import messagebox as mssg
 import sqlite3
-<<<<<<< HEAD
+
 from os import path
-=======
+
 #import re
 
 #validar si la fecha es válida
-def es_fecha_valida(fecha_texto):
+def es_Fecha_Valida(fecha_texto):
    espacios = fecha_texto.split('/')
     
    if len(espacios) != 3:
@@ -37,7 +37,7 @@ def es_fecha_valida(fecha_texto):
       return False  # Día fuera de rango para el mes dado
     
    return True  # La fecha es válida
->>>>>>> 58e67181cca3adfb73ada828b7e7da011c02d0fb
+
 
 class Inventario:
   def __init__(self, master=None):
@@ -77,7 +77,7 @@ class Inventario:
     self.idNit = ttk.Entry(self.frm1)
     self.idNit.configure(takefocus=True)#, state = 'readonly')
     self.idNit.place(anchor="nw", x=50, y=40)
-    self.idNit.bind("<KeyRelease>", self.validaIdNit)
+    self.idNit.bind("<KeyRelease>", self.valida_Id_Nit)
     self.idNit.bind("<BackSpace>", lambda _:self.idNit.delete(len(self.idNit.get())),'end')
     self.idNit.focus_set()
 
@@ -90,7 +90,7 @@ class Inventario:
     self.razonSocial = ttk.Entry(self.frm1)
     self.razonSocial.configure(width=36)
     self.razonSocial.place(anchor="nw", x=290, y=40)
-    self.razonSocial.bind("<KeyRelease>", self.validaRazonSocial)
+    self.razonSocial.bind("<KeyRelease>", self.valida_Razon_Social)
     self.razonSocial.bind("<BackSpace>", lambda _:self.razonSocial.delete(len(self.razonSocial.get())),'end')
 
     #Etiqueta ciudad del Proveedor
@@ -102,7 +102,7 @@ class Inventario:
     self.ciudad = ttk.Entry(self.frm1)
     self.ciudad.configure(width=30)
     self.ciudad.place(anchor="nw", x=590, y=40)
-    self.ciudad.bind("<KeyRelease>", self.validaCiudad)
+    self.ciudad.bind("<KeyRelease>", self.valida_Ciudad)
     self.ciudad.bind("<BackSpace>", lambda _:self.ciudad.delete(len(self.ciudad.get())),'end')
 
     #Separador
@@ -119,7 +119,7 @@ class Inventario:
     self.codigo = ttk.Entry(self.frm1)
     self.codigo.configure(width=13)# state = 'readonly')
     self.codigo.place(anchor="nw", x=60, y=120)
-    self.codigo.bind("<KeyRelease>", self.validaCodigo)
+    self.codigo.bind("<KeyRelease>", self.valida_Codigo)
     self.codigo.bind("<BackSpace>", lambda _:self.codigo.delete(len(self.codigo.get())),'end')
 
     #Etiqueta descripción del Producto
@@ -131,7 +131,7 @@ class Inventario:
     self.descripcion = ttk.Entry(self.frm1)
     self.descripcion.configure(width=36)
     self.descripcion.place(anchor="nw", x=290, y=120)
-    self.descripcion.bind("<KeyRelease>", self.validaDescripcion)
+    self.descripcion.bind("<KeyRelease>", self.valida_Descripcion)
     self.descripcion.bind("<BackSpace>", lambda _:self.descripcion.delete(len(self.descripcion.get())),'end')
 
     #Etiqueta unidad o medida del Producto
@@ -143,7 +143,7 @@ class Inventario:
     self.unidad = ttk.Entry(self.frm1)
     self.unidad.configure(width=10)
     self.unidad.place(anchor="nw", x=590, y=120)
-    self.unidad.bind("<KeyRelease>", self.validaUnidad)
+    self.unidad.bind("<KeyRelease>", self.valida_Unidad)
     self.unidad.bind("<BackSpace>", lambda _:self.unidad.delete(len(self.unidad.get())),'end')
 
     #Etiqueta cantidad del Producto
@@ -155,7 +155,7 @@ class Inventario:
     self.cantidad = ttk.Entry(self.frm1)
     self.cantidad.configure(width=12)
     self.cantidad.place(anchor="nw", x=70, y=170)
-    self.cantidad.bind("<KeyRelease>", self.validaCantidad)
+    self.cantidad.bind("<KeyRelease>", self.valida_Cantidad)
     self.cantidad.bind("<BackSpace>", lambda _:self.cantidad.delete(len(self.cantidad.get())),'end')
 
     #Etiqueta precio del Producto
@@ -167,7 +167,7 @@ class Inventario:
     self.precio = ttk.Entry(self.frm1)
     self.precio.configure(width=15)
     self.precio.place(anchor="nw", x=220, y=170)
-    self.precio.bind("<KeyRelease>", self.validaPrecio)
+    self.precio.bind("<KeyRelease>", self.valida_Precio)
     self.precio.bind("<BackSpace>", lambda _:self.precio.delete(len(self.precio.get())),'end')
 
     #Etiqueta fecha de compra del Producto
@@ -179,7 +179,7 @@ class Inventario:
     self.fecha = ttk.Entry(self.frm1)
     self.fecha.configure(width=10)
     self.fecha.place(anchor="nw", x=390, y=170)
-    self.fecha.bind("<FocusOut>", self.validaFecha)
+    self.fecha.bind("<FocusOut>", self.valida_Fecha)
     self.fecha.bind("<BackSpace>", lambda _:self.fecha.delete(len(self.fecha.get())),'end')    
 
     #Separador
@@ -239,7 +239,7 @@ class Inventario:
 
     #Botón para Buscar un Proveedor
     self.btnBuscar = ttk.Button(self.frm2)
-    self.btnBuscar.configure(text='Buscar',command= self.button_buscar)
+    self.btnBuscar.configure(text='Buscar',command= self.search_Button())
     self.btnBuscar.place(anchor="nw", width=70, x=200, y=10)
 
     #Botón para Guardar los datos
@@ -259,7 +259,7 @@ class Inventario:
 
     #Botón para cancelar una operación
     self.btnCancelar = ttk.Button(self.frm2)
-    self.btnCancelar.configure(text='Cancelar', width=80, command = self.limpiaCampos)
+    self.btnCancelar.configure(text='Cancelar', width=80, command = self.cancel_Button())
     self.btnCancelar.place(anchor="nw", width=70, x=500, y=10)
 
     #Ubicación del Frame 2
@@ -283,7 +283,7 @@ class Inventario:
       win.deiconify() # Se usa para restaurar la ventana
 
  # Validaciones del sistema
-  def validaIdNit(self, event):
+  def valida_Id_Nit(self, event):
     ''' Valida que la longitud no sea mayor a 15 caracteres'''
     if event.char:
       if ' ' in self.idNit.get():
@@ -302,7 +302,7 @@ class Inventario:
     else:
         self.idNit.delete(14)
     
-  def validaRazonSocial(self, event):
+  def valida_Razon_Social(self, event):
      ''' Valida que la longitud no sea mayor a 25 caracteres'''
      if event.char:
         if len(self.razonSocial.get()) >= 25:
@@ -311,7 +311,7 @@ class Inventario:
      else:
         self.razonSocial.delete(24)
 
-  def validaCiudad(self, event):
+  def valida_Ciudad(self, event):
      ''' Valida que la longitud no sea mayor a 15 caracteres'''
      if event.char:
         if len(self.ciudad.get()) >= 15:
@@ -320,7 +320,7 @@ class Inventario:
      else:
         self.ciudad.delete(14) 
 
-  def validaCodigo(self, event):
+  def valida_Codigo(self, event):
      ''' Valida que la longitud no sea mayor a 15 caracteres'''
      if event.char:
         if ' ' in self.codigo.get():
@@ -338,7 +338,7 @@ class Inventario:
      else:
         self.codigo.delete(14)
 
-  def validaDescripcion(self, event):
+  def valida_Descripcion(self, event):
      ''' Valida que la longitud no sea mayor a 50 caracteres'''
      if event.char:
         if len(self.descripcion.get()) >= 50:
@@ -347,7 +347,7 @@ class Inventario:
      else:
         self.descripcion.delete(49) 
      
-  def validaUnidad(self, event):
+  def valida_Unidad(self, event):
      ''' Valida que la longitud no sea mayor a 10 caracteres'''
      if event.char:
         if len(self.unidad.get()) >= 10:
@@ -356,7 +356,7 @@ class Inventario:
      else:
         self.unidad.delete(9)  
 
-  def validaCantidad(self, event):
+  def valida_Cantidad(self, event):
      ''' Valida que la longitud no sea mayor a 6 caracteres y sea int'''
      if event.char:
         if len(self.cantidad.get()) >= 6:
@@ -370,7 +370,7 @@ class Inventario:
                 mssg.showerror('Atención!!','.. ¡Solo números! ..')
                 self.cantidad.delete(0, 'end')
   
-  def validaPrecio(self, event):
+  def valida_Precio(self, event):
     ''' Valida que la longitud no sea mayor a 9 caracteres y sea int'''
     if event.char:
         if len(self.precio.get()) >= 9:
@@ -388,27 +388,19 @@ class Inventario:
         mssg.showerror('Atención!!','.. ¡Precio inválido! ..')
         self.precio.delete(0, 'end')  # Limpiar el contenido del Entry en caso de error              
             
-  def validaFecha(self, event):  
+  def valida_Fecha(self, event):  
      ''' Valida que la fecha sea válida'''
      if event.char:
            ''' Valida que la longitud no sea mayor a 10 caracteres y sea int'''
      if event.char:
         #if re.match(r"^\d{2}/\d{2}/\d{4}$", self.fecha.get()):
       
-         if es_fecha_valida(self.fecha.get()) == False:
+         if es_Fecha_Valida(self.fecha.get()) == False:
             mssg.showerror('Atención!!','.. ¡Fecha Inválida! ..')
             self.fecha.delete(0, 'end')
         
-
-
-
-
-        
-
-
-
   #Rutina de limpieza de datos
-  def limpiaCampos(self):
+  def limpia_Campos(self):
       ''' Limpia todos los campos de captura'''
       Inventario.actualiza = None
       self.idNit.config(state = 'normal')
@@ -444,7 +436,7 @@ class Inventario:
         conn.commit()
     return result
 
-  def lee_treeProductos(self):
+  def lee_Tree_Productos(self):
     ''' Carga los datos y Limpia la Tabla tablaTreeView '''
     tabla_TreeView = self.treeProductos.get_children()
     for linea in tabla_TreeView:
@@ -465,7 +457,6 @@ class Inventario:
     self.idNit.insert(0,row[0])
     self.razonSocial.insert(0,row[1])
     self.ciudad.insert(0,row[2])
-<<<<<<< HEAD
     self.codigo.insert(0,row[4])
     self.descripcion.insert(0,row[5])
     self.unidad.insert(0,row[6])
@@ -473,25 +464,16 @@ class Inventario:
     self.precio.insert(0,row[8])
     self.fecha.insert(0,row[9])  
     
-  def limpiar_treeview(self):
+  def limpiar_Treeview(self):
     tabla_TreeView = self.treeProductos.get_children()
     for linea in tabla_TreeView:
         self.treeProductos.delete(linea)
-  def cargar_datos_treeview(self,db_rows):
+  def cargar_Datos_Treeview(self,db_rows):
       for row in db_rows:
          self.treeProductos.insert('',0, text = row[0], values = [row[1],row[2],row[3],row[4],row[5],row[6]])
-  def cargar_datos_buscados(self,search):
-      self.limpiar_treeview()
-      self.cargar_datos_treeview(search)
-      
-=======
-    self.codigo.insert(0,row[3])
-    self.descripcion.insert(0,row[4])
-    self.unidad.insert(0,row[5])
-    self.cantidad.insert(0,row[6])
-    self.precio.insert(0,row[7])
-    self.fecha.insert(0,row[8])  
->>>>>>> 58e67181cca3adfb73ada828b7e7da011c02d0fb
+  def cargar_Datos_Buscados(self,search):
+      self.limpiar_Treeview()
+      self.cargar_Datos_Treeview(search)
           
   def adiciona_Registro(self, event=None):
     '''Adiciona un producto a la BD si la validación es True'''
@@ -507,41 +489,41 @@ class Inventario:
     fecha = self.fecha.get()
     pass
    
-  def editaTreeProveedores(self, event=None):
+  def edita_Tree_Proveedores(self, event=None):
     ''' Edita una tupla del TreeView'''
     pass
       
-  def eliminaRegistro(self, event=None):
+  def elimina_Registro(self, event=None):
     '''Elimina un Registro en la BD'''
     pass
-  def accion_Buscar(self,seleccion,tabla,condicion):
+  def accion_Buscar(self,seleccion,tabla,condicion, valoresdecodicion =()):
     search=f'''SELECT {seleccion} FROM {tabla} WHERE {condicion}'''
-    resultado=self.run_Query(search)
+    resultado=self.run_Query(search,valoresdecodicion)
     return resultado
   def validar_ID(self):
     id=self.idNit.get()
-    search_id=self.accion_Buscar('*','Proveedor',f'idNitProv={id}').fetchone()
+    search_id=self.accion_Buscar('*','Proveedor','idNitProv= ? ', (id,)).fetchone()
     if search_id==None :
       prov_Exist=False
     else:
        prov_Exist=True
     return prov_Exist
-  def validar_Codigo(self):
+  def validar_Cod(self):
      codigo=self.codigo.get()
-     search_id=self.accion_Buscar('*','Producto',f'Codigo={codigo}').fetchone()
+     search_id=self.accion_Buscar('*','Producto','Codigo= ? ', (codigo,)).fetchone()
      if search_id==None :
         cod_Exist=False
      else:
         cod_Exist=True
      return cod_Exist
   
-  def cargar_proveedor(self, id):
-     proveedor=self.accion_Buscar("*","Proveedor",f"idNitProv={id}").fetchone()
+  def cargar_Proveedor(self, id):
+     proveedor=self.accion_Buscar("*","Proveedor","idNitProv= ? " , (id,)).fetchone()
      self.idNit.insert(0,proveedor[0])
      self.razonSocial.insert(0,proveedor[1])
      self.ciudad.insert(0, proveedor[2])
   
-  def cargar_producto(self,producto):
+  def cargar_Producto(self,producto):
      self.codigo.insert(0,producto[1])
      self.descripcion.insert(0,producto[2])
      self.unidad.insert(0,producto[3])
@@ -550,40 +532,48 @@ class Inventario:
      self.fecha.insert(0,producto[6])
 
      
-  def button_buscar(self):
-     if self.idNit.get()!= "" and self.codigo.get()=="":
+  def search_Button (self):
+     id= self.idNit.get()
+     cod= self.codigo.get()
+     if id != "" and cod =="":
         if self.validar_ID()==True:
-          search=self.accion_Buscar("*","Producto", f"IdNit={self.idNit.get() } ").fetchall()
-          self.cargar_datos_buscados(search)
-          self.limpiaCampos()
-          self.cargar_proveedor(search[0][0])
+          search=self.accion_Buscar("*","Producto", "IdNit= ? ", (id,)).fetchall()
+          self.limpia_Campos()
+          self.cargar_Datos_Buscados(search)
+          self.cargar_Proveedor(id)
         else:
            mssg.showerror('Atención!!','.. ¡El proveedor no existe! ..')
-     elif self.idNit.get()== "" and self.codigo.get()!="":
-        if self.validar_Codigo()==True:
-           search=self.accion_Buscar("*","Producto", f"Codigo={self.codigo.get() } ").fetchall()
-           self.cargar_datos_buscados(search)
-           self.limpiaCampos()
-           self.cargar_proveedor(search[0][0])
-           self.cargar_producto(search[0])
+     elif id == "" and cod !="":
+        if self.validar_Cod()==True:
+           search=self.accion_Buscar("*","Producto", "Codigo= ? ",(cod,)).fetchall()
+           self.cargar_Datos_Buscados(search)
+           self.limpia_Campos()
+           self.codigo.insert(cod)
         else:
            mssg.showerror('Atención!!','.. ¡El producto no existe! ..')
-     elif self.idNit.get()!= "" and self.codigo.get()!="":
-        if self.validar_ID()==True and self.validar_Codigo()==True:
-           search=self.accion_Buscar("*","Producto", f"Codigo={self.codigo.get() } AND IdNit= {self.idNit.get()} ").fetchall()
+     elif id != "" and cod !="":
+        if self.validar_ID()==True and self.validar_Cod()==True:
+           search=self.accion_Buscar("*","Producto", "Codigo= ? AND IdNit= ? ", (cod , id,)).fetchone()
            if search == None:
               mssg.showerror('Atención!!','.. ¡El producto no corresponde al proveedor indicado! ..')
            else: 
-              self.cargar_datos_buscados(search)
-              self.limpiaCampos()
-              self.cargar_proveedor(search[0][0])
-              self.cargar_producto(search[0])
-        elif self.validar_ID()==True and self.validar_Codigo()==False:
+              self.limpia_Campos()
+              self.cargar_Datos_Buscados(search)
+              self.cargar_Proveedor(id)
+              self.cargar_Producto(search)
+        elif self.validar_ID()==True and self.validar_Cod()==False:
            mssg.showerror('Atención!!','.. ¡El producto no existe! ..')
-        elif self.validar_ID()==False and self.validar_Codigo()==True:
+        elif self.validar_ID()==False and self.validar_Cod()==True:
            mssg.showerror('Atención!!','.. ¡El proveedor no existe! ..')
-        elif self.validar_ID()==False and self.validar_Codigo()==False:
+        elif self.validar_ID()==False and self.validar_Cod()==False:
            mssg.showerror('Atención!!','.. ¡Ni el producto, ni el proveedor existen! ..')
+
+  def cancel_Button(self):
+     self.limpiar_Treeview()
+     self.limpia_Campos()
+   
+  def record_Button(self):
+     pass
            
 
 
