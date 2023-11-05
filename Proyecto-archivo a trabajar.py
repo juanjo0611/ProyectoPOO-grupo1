@@ -4,7 +4,6 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import messagebox as mssg
 import sqlite3
-
 from os import path
 
 #import re
@@ -398,6 +397,24 @@ class Inventario:
          if es_Fecha_Valida(self.fecha.get()) == False:
             mssg.showerror('Atención!!','.. ¡Fecha Inválida! ..')
             self.fecha.delete(0, 'end')
+   
+  def validar_ID(self):
+    id=self.idNit.get()
+    search_id=self.accion_Buscar('*','Proveedor','idNitProv= ? ', (id,)).fetchone()
+    if search_id==None :
+      prov_Exist=False
+    else:
+       prov_Exist=True
+    return prov_Exist
+  
+  def validar_Cod(self):
+     codigo=self.codigo.get()
+     search_id=self.accion_Buscar('*','Producto','Codigo= ? ', (codigo,)).fetchone()
+     if search_id==None :
+        cod_Exist=False
+     else:
+        cod_Exist=True
+     return cod_Exist
         
   #Rutina de limpieza de datos
   def limpia_Campos(self):
@@ -468,9 +485,11 @@ class Inventario:
     tabla_TreeView = self.treeProductos.get_children()
     for linea in tabla_TreeView:
         self.treeProductos.delete(linea)
+
   def cargar_Datos_Treeview(self,db_rows):
       for row in db_rows:
          self.treeProductos.insert('',0, text = row[0], values = [row[1],row[2],row[3],row[4],row[5],row[6]])
+
   def cargar_Datos_Buscados(self,search):
       self.limpiar_Treeview()
       self.cargar_Datos_Treeview(search)
@@ -487,7 +506,20 @@ class Inventario:
     cantidad = self.cantidad.get()
     precio = self.precio.get()
     fecha = self.fecha.get()
-    pass
+    relacion=self.accion_Buscar('*','Producto','IdNit = ? AND Codigo = ?',(id_nit, codigo,)).fetchone()
+    if id_nit=="" and codigo=="":
+       mssg.showerror('Atención!!','.. ¡No se han especificado ningun dato para guardar! ..')
+    elif id_nit=="":
+       mssg.showerror('Atención!!','.. ¡No se especifico ningun proveedor para el producto! ..')
+    elif codigo=="":
+       if self.validar_ID==False:
+          self.insertar_Proveedor(id_nit, razon_social,ciudad)
+       else:
+          mssg.showerror('Atención!!','.. ¡El proveedor ya existe no puede ser insertado otra vez! ..')
+    elif id_nit!="" and codigo!="":
+       if (self.validar_ID()==False and self.valida_Codigo()==False) or (self.valida_Codigo()==True and self.validar_ID==False):
+          self.insertar_Proveedor(id_nit,razon_social,ciudad)
+          self.insertar_Producto(id_nit,codigo,descripcion,unidad,cantidad, precio, fecha)
    
   def edita_Tree_Proveedores(self, event=None):
     ''' Edita una tupla del TreeView'''
@@ -496,26 +528,19 @@ class Inventario:
   def elimina_Registro(self, event=None):
     '''Elimina un Registro en la BD'''
     pass
+  
   def accion_Buscar(self,seleccion,tabla,condicion, valoresdecodicion =()):
     search=f'''SELECT {seleccion} FROM {tabla} WHERE {condicion}'''
     resultado=self.run_Query(search,valoresdecodicion)
     return resultado
-  def validar_ID(self):
-    id=self.idNit.get()
-    search_id=self.accion_Buscar('*','Proveedor','idNitProv= ? ', (id,)).fetchone()
-    if search_id==None :
-      prov_Exist=False
-    else:
-       prov_Exist=True
-    return prov_Exist
-  def validar_Cod(self):
-     codigo=self.codigo.get()
-     search_id=self.accion_Buscar('*','Producto','Codigo= ? ', (codigo,)).fetchone()
-     if search_id==None :
-        cod_Exist=False
-     else:
-        cod_Exist=True
-     return cod_Exist
+  
+  def insertar_Proveedor(self, id , razon_social, ciudad):
+    insert=f''' INSERT INTO Proveedor VALUES (?,?,?)'''
+    self.run_Query(insert, (id, razon_social, ciudad,))
+   
+  def insertar_Producto(self, IdNit, Codigo, descripcion, und, cantidad, precio, fecha):
+    insert=f''' INSERT INTO Producto VALUES (?,?,?,?,?,?,?)'''
+    self.run_Query(insert, (IdNit, Codigo, descripcion, und, cantidad, precio, fecha,))
   
   def cargar_Proveedor(self, id):
      proveedor=self.accion_Buscar("*","Proveedor","idNitProv= ? " , (id,)).fetchone()
