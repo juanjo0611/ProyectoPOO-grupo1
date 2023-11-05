@@ -44,7 +44,7 @@ class Inventario:
     self.db_name = self.path + r'/Inventario.db'
     self.ico=self.path + r'/f2.ico'
     ancho=830;alto=840 # Dimensione de la pantalla
-    actualiza = None
+    self.actualiza = None
 
     # Crea ventana principal
     self.win = tk.Tk() 
@@ -238,12 +238,12 @@ class Inventario:
 
     #Botón para Buscar un Proveedor
     self.btnBuscar = ttk.Button(self.frm2)
-    self.btnBuscar.configure(text='Buscar',command= self.search_Button())
+    self.btnBuscar.configure(text='Busca',command= self.search_Button)
     self.btnBuscar.place(anchor="nw", width=70, x=200, y=10)
 
     #Botón para Guardar los datos
     self.btnGrabar = ttk.Button(self.frm2)
-    self.btnGrabar.configure(text='Grabar')
+    self.btnGrabar.configure(text='Grabar', command= self.record_Button)
     self.btnGrabar.place(anchor="nw", width=70, x=275, y=10)
 
     #Botón para Editar los datos
@@ -258,7 +258,7 @@ class Inventario:
 
     #Botón para cancelar una operación
     self.btnCancelar = ttk.Button(self.frm2)
-    self.btnCancelar.configure(text='Cancelar', width=80, command = self.cancel_Button())
+    self.btnCancelar.configure(text='Cancelar', width=80, command = self.cancel_Button)
     self.btnCancelar.place(anchor="nw", width=70, x=500, y=10)
 
     #Ubicación del Frame 2
@@ -267,6 +267,8 @@ class Inventario:
 
     # widget Principal del sistema
     self.mainwindow = self.win
+  def a():
+     print("a")
 
   #Fución de manejo de eventos del sistema
   def run(self):
@@ -399,13 +401,13 @@ class Inventario:
             self.fecha.delete(0, 'end')
    
   def validar_ID(self):
-    id=self.idNit.get()
-    search_id=self.accion_Buscar('*','Proveedor','idNitProv= ? ', (id,)).fetchone()
-    if search_id==None :
-      prov_Exist=False
-    else:
-       prov_Exist=True
-    return prov_Exist
+     id=self.idNit.get()
+     search_id=self.accion_Buscar('*','Proveedor','idNitProv= ? ', (id,)).fetchone()
+     if search_id==None :
+        prov_Exist=False
+     else:
+        prov_Exist=True
+     return prov_Exist
   
   def validar_Cod(self):
      codigo=self.codigo.get()
@@ -507,20 +509,44 @@ class Inventario:
     precio = self.precio.get()
     fecha = self.fecha.get()
     relacion=self.accion_Buscar('*','Producto','IdNit = ? AND Codigo = ?',(id_nit, codigo,)).fetchone()
+
     if id_nit=="" and codigo=="":
        mssg.showerror('Atención!!','.. ¡No se han especificado ningun dato para guardar! ..')
-    elif id_nit=="":
+
+    elif id_nit=="" and codigo!="":
        mssg.showerror('Atención!!','.. ¡No se especifico ningun proveedor para el producto! ..')
-    elif codigo=="":
-       if self.validar_ID==False:
+
+    elif codigo=="" and id_nit!= "":
+       
+       if self.validar_ID()==False:
           self.insertar_Proveedor(id_nit, razon_social,ciudad)
-       else:
+          mssg.showinfo('Confirmación','.. El proveedor a sido registrado correctamente ..')
+
+       elif self.validar_ID()==True:
           mssg.showerror('Atención!!','.. ¡El proveedor ya existe no puede ser insertado otra vez! ..')
+
     elif id_nit!="" and codigo!="":
-       if (self.validar_ID()==False and self.valida_Codigo()==False) or (self.valida_Codigo()==True and self.validar_ID==False):
-          self.insertar_Proveedor(id_nit,razon_social,ciudad)
-          self.insertar_Producto(id_nit,codigo,descripcion,unidad,cantidad, precio, fecha)
-   
+       if fecha!="":
+          if (self.validar_ID()==False and self.validar_Cod()==False) or (self.validar_Cod()==True and self.validar_ID()==False):
+             self.insertar_Proveedor(id_nit,razon_social,ciudad)
+             mssg.showinfo('Confirmación','.. El proveedor a sido registrado correctamente ..')
+             self.insertar_Producto(id_nit,codigo,descripcion,unidad,cantidad, precio, fecha)
+             mssg.showinfo('Confirmación','.. El producto a sido registrado correctamente ..')
+             datos=self.accion_Buscar("*","Producto"," IdNit = ? AND Codigo = ?",(id_nit,codigo,)).fetchall()
+             self.cargar_Datos_Buscados(datos)
+
+          elif (self.validar_ID()==True and self.validar_Cod()==False) or (relacion == None):
+          
+             self.insertar_Producto(id_nit,codigo,descripcion,unidad,cantidad, precio, fecha)
+             mssg.showinfo('Confirmación','.. El producto a sido registrado correctamente ..')
+             datos=self.accion_Buscar("*","Producto"," IdNit = ? AND Codigo = ?",(id_nit,codigo,)).fetchall()
+             self.cargar_Datos_Buscados(datos)
+
+          elif relacion!= None:  
+             mssg.showerror('Atención!!','.. ¡El producto ya esta relacionado con el proveedor indicado! ..')
+       elif fecha=="":
+            mssg.showerror('Atención!!','.. ¡Digite una fecha para registrar! ..')
+          
   def edita_Tree_Proveedores(self, event=None):
     ''' Edita una tupla del TreeView'''
     pass
@@ -573,12 +599,16 @@ class Inventario:
            search=self.accion_Buscar("*","Producto", "Codigo= ? ",(cod,)).fetchall()
            self.cargar_Datos_Buscados(search)
            self.limpia_Campos()
-           self.codigo.insert(cod)
+           if len(search)>1:
+              self.codigo.insert(0,cod)
+           else:
+              self.cargar_Producto(search)
+              self.cargar_Proveedor(id)
         else:
            mssg.showerror('Atención!!','.. ¡El producto no existe! ..')
      elif id != "" and cod !="":
         if self.validar_ID()==True and self.validar_Cod()==True:
-           search=self.accion_Buscar("*","Producto", "Codigo= ? AND IdNit= ? ", (cod , id,)).fetchone()
+           search=self.accion_Buscar("*","Producto", "Codigo= ? AND IdNit= ? ", (cod , id,)).fetchall()
            if search == None:
               mssg.showerror('Atención!!','.. ¡El producto no corresponde al proveedor indicado! ..')
            else: 
@@ -598,7 +628,8 @@ class Inventario:
      self.limpia_Campos()
    
   def record_Button(self):
-     pass
+     if self.actualiza==None:
+        self.adiciona_Registro()
            
 
 
