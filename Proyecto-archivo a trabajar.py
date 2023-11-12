@@ -195,8 +195,8 @@ class Inventario:
     
     #Árbol para mosrtar los datos de la B.D.
     self.treeProductos = ttk.Treeview(self.frm1, style="estilo.Treeview")
-    
     self.treeProductos.configure(selectmode="extended")
+    self.treeProductos.bind('<Double-Button-1>',lambda _: self.carga_Datos())
 
     # Etiquetas de las columnas para el TreeView
     self.treeProductos["columns"]=("Codigo","Descripcion","Und","Cantidad","Precio","Fecha")
@@ -248,7 +248,7 @@ class Inventario:
 
     #Botón para Editar los datos
     self.btnEditar = ttk.Button(self.frm2)
-    self.btnEditar.configure(text='Editar')
+    self.btnEditar.configure(text='Editar', command=self.edit_Button)
     self.btnEditar.place(anchor="nw", width=70, x=350, y=10)
 
     #Botón para Elimnar datos
@@ -267,8 +267,6 @@ class Inventario:
 
     # widget Principal del sistema
     self.mainwindow = self.win
-  def a():
-     print("a")
 
   #Fución de manejo de eventos del sistema
   def run(self):
@@ -282,6 +280,16 @@ class Inventario:
       y = win.winfo_screenheight() // 2 - alto // 2 
       win.geometry(f'{ancho}x{alto}+{x}+{y}') 
       win.deiconify() # Se usa para restaurar la ventana
+      
+  def estado_Buttons(self, estado):
+     if estado==True:
+        self.btnBuscar.configure(state='normal')
+        self.btnEditar.configure(state='normal')
+        self.btnEliminar.configure(state='normal')
+     elif estado==False:
+        self.btnBuscar.configure(state='disabled')
+        self.btnEditar.configure(state='disabled')
+        self.btnEliminar.configure(state='disabled')
 
  # Validaciones del sistema
   def valida_Id_Nit(self, event):
@@ -421,31 +429,75 @@ class Inventario:
   #Rutina de limpieza de datos
   def limpia_Campos(self):
       ''' Limpia todos los campos de captura'''
-      Inventario.actualiza = None
-      self.idNit.config(state = 'normal')
+      self.idNit.configure(state = 'normal')
       self.idNit.delete(0,'end')
       self.razonSocial.delete(0,'end')
       self.ciudad.delete(0,'end')
       self.idNit.delete(0,'end')
       self.codigo.delete(0,'end')
+      self.codigo.configure(state = 'normal')
       self.descripcion.delete(0,'end')
       self.unidad.delete(0,'end')
       self.cantidad.delete(0,'end')
       self.precio.delete(0,'end')
       self.fecha.delete(0,'end')
+      
  
   #Rutina para cargar los datos en el árbol  
   def carga_Datos(self):
-    self.idNit.insert(0,self.treeProductos.item(self.treeProductos.selection())['text'])
-    self.idNit.configure(state = 'readonly')
-    self.codigo.insert(0,self.treeProductos.item(self.treeProductos.selection())['values'][1])
-    self.descripcion.insert(0,self.treeProductos.item(self.treeProductos.selection())['values'][2])
-    self.unidad.insert(0,self.treeProductos.item(self.treeProductos.selection())['values'][3])
-    self.cantidad.insert(0,self.treeProductos.item(self.treeProductos.selection())['values'][4])
-    self.precio.insert(0,self.treeProductos.item(self.treeProductos.selection())['values'][5])
-    self.fecha.insert(0,self.treeProductos.item(self.treeProductos.selection())['values'][6])
-    
+    seleccion=self.treeProductos.selection()
+    if seleccion != ():
+       self.estado_Buttons(False)
+       self.limpia_Campos()
+       item=self.treeProductos.item(seleccion)
+       self.cargar_Proveedor(item ['text'])
+       self.idNit.configure(state = 'readonly')
+       self.codigo.insert(0,item['values'][0])
+       self.codigo.configure(state='readonly')
+       self.descripcion.insert(0,item['values'][1])
+       self.unidad.insert(0,item['values'][2])
+       self.cantidad.insert(0,item['values'][3])
+       self.precio.insert(0,item['values'][4])
+       self.fecha.insert(0,item['values'][5])
+       self.actualiza=True
+       dato_cargado=[[item['text'],item['values'][0],item['values'][1],item['values'][2],item['values'][3],item['values'][4],item['values'][5]]]
+       self.cargar_Datos_Buscados(dato_cargado)
+       mssg.showinfo('Confirmación',
+                     '''.. Se ha activado el modo Editar, puede modificar la información del producto y provvedor seleccionado ..''')
+    elif seleccion== ():
+       mssg.showerror('Atención!!','.. ¡No se ha seleccionado nada! ..')
 
+  def actualizar_datos(self):
+     id_nit = self.idNit.get()
+     razon_social = self.razonSocial.get()
+     ciudad = self.ciudad.get()
+     codigo = self.codigo.get()
+     descripcion = self.descripcion.get()
+     unidad = self.unidad.get()
+     cantidad = float(self.cantidad.get())
+     precio = float(self.precio.get())
+     fecha = self.fecha.get()
+     proveedor=self.accion_Buscar('*', 'Proveedor', ' idNitProv = ? ', (id_nit,)).fetchone()
+     producto=self.accion_Buscar('*', 'Producto', ' IdNit = ? AND Codigo = ? ', (id_nit, codigo,)).fetchone()
+     proveedor_update=(id_nit,razon_social,ciudad)
+     producto_update=(id_nit,codigo,descripcion,unidad,cantidad,precio,fecha)
+     if proveedor == proveedor_update:
+        if producto==producto_update:
+           mssg.showinfo('.. Confirmación ..', '.. No se realizo ningun cambio, saliendo del modo Editar ..')
+        elif producto!=producto_update:
+           self.actualizar_Producto((descripcion,unidad,cantidad,precio,fecha,id_nit,codigo,))
+           self.cargar_Datos_Buscados([[id_nit,codigo,descripcion,unidad,cantidad,precio,fecha]])
+           mssg.showinfo('.. Confirmación ..', '.. Producto actualizado ..')
+     elif proveedor!=proveedor_update:
+        self.actualizar_Proveedor((razon_social,ciudad,id_nit,))
+        mssg.showinfo('.. Confirmación ..', '.. Proveedor actualizado ..')   
+        if producto!=producto_update:
+           self.actualizar_Producto((descripcion,unidad,cantidad,precio,fecha,id_nit,codigo,))
+           self.cargar_Datos_Buscados([[id_nit,codigo,descripcion,unidad,cantidad,precio,fecha]])
+           mssg.showinfo('.. Confirmación ..', '.. Producto actualizado ..')
+     self.actualiza=None
+     self.limpia_Campos()
+           
   # Operaciones con la base de datos
   def run_Query(self, query, parametros = ()):
     ''' Función para ejecutar los Querys a la base de datos '''
@@ -567,6 +619,18 @@ class Inventario:
   def insertar_Producto(self, IdNit, Codigo, descripcion, und, cantidad, precio, fecha):
     insert=f''' INSERT INTO Producto VALUES (?,?,?,?,?,?,?)'''
     self.run_Query(insert, (IdNit, Codigo, descripcion, und, cantidad, precio, fecha,))
+
+  def actualizar_Proveedor(self, values):
+     update=''' UPDATE Proveedor 
+                SET Razon_Social = ? , Ciudad = ? WHERE 
+                idNitProv = ? '''
+     self.run_Query(update,values)
+
+  def actualizar_Producto(self,values):
+     update=''' UPDATE Producto 
+             SET Descripcion = ? , Und = ? , Cantidad = ? , Precio = ? , Fecha = ? 
+             WHERE IdNit = ? AND Codigo = ? '''
+     self.run_Query(update,values)
   
   def cargar_Proveedor(self, id):
      proveedor=self.accion_Buscar("*","Proveedor","idNitProv= ? " , (id,)).fetchone()
@@ -602,7 +666,7 @@ class Inventario:
            if len(search)>1:
               self.codigo.insert(0,cod)
            else:
-              self.cargar_Producto(search)
+              self.cargar_Producto(search[0])
               self.cargar_Proveedor(id)
         else:
            mssg.showerror('Atención!!','.. ¡El producto no existe! ..')
@@ -615,7 +679,7 @@ class Inventario:
               self.limpia_Campos()
               self.cargar_Datos_Buscados(search)
               self.cargar_Proveedor(id)
-              self.cargar_Producto(search)
+              self.cargar_Producto(search[0])
         elif self.validar_ID()==True and self.validar_Cod()==False:
            mssg.showerror('Atención!!','.. ¡El producto no existe! ..')
         elif self.validar_ID()==False and self.validar_Cod()==True:
@@ -626,10 +690,24 @@ class Inventario:
   def cancel_Button(self):
      self.limpiar_Treeview()
      self.limpia_Campos()
+     if self.actualiza== True:
+         self.actualiza = None
+         mssg.showinfo(".. Confirmación ..", '.. Ha salido del modo Editar ..')
+     self.estado_Buttons(True)
    
   def record_Button(self):
      if self.actualiza==None:
         self.adiciona_Registro()
+     elif self.actualiza== True:
+        self.actualizar_datos()
+        self.estado_Buttons(True)
+        
+  def edit_Button(self):
+     if 
+     self.carga_Datos()
+     
+     
+     
            
 
 
