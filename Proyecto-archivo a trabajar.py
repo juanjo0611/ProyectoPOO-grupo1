@@ -404,8 +404,8 @@ class Inventario:
             self.idNit.delete(0, tk.END)
             self.idNit.insert(0, contenido_sin_espacio)
 
-      if len(self.idNit.get()) >= 15:
-         self.idNit.delete(15,'end')
+      if len(self.idNit.get()) > 15:
+         self.idNit.delete(15,tk.END)
          mssg.showerror('Atención!!','.. ¡Máximo 15 caracteres! ..')
          
     else:
