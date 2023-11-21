@@ -272,6 +272,25 @@ class Inventario:
   def run(self):
       self.mainwindow.mainloop()
 
+  def database_build(self):
+     producto=''' CREATE TABLE IF NOT EXISTS "Producto" (
+	  "IdNit"	VARCHAR(15),
+	  "Codigo"	VARCHAR(15) NOT NULL,
+	  "Descripcion"	VARCHAR,
+	  "Und"	VARCHAR(10),
+	  "Cantidad"	DOUBLE,
+	  "Precio"	DOUBLE,
+	  "Fecha"	DATE,
+	  PRIMARY KEY("Codigo","IdNit") ) '''
+     proveedor='''CREATE TABLE IF NOT EXISTS "Proveedor" (
+	  "idNitProv"	VARCHAR NOT NULL UNIQUE,
+	  "Razon_Social"	VARCHAR,
+	  "Ciudad"	VARCHAR,
+	  PRIMARY KEY("idNitProv") )'''
+     self.run_Query(proveedor)
+     self.run_Query(producto)
+
+
   ''' ......... Métodos utilitarios del sistema .............'''
   #Rutina de centrado de pantalla
   def centra(self,win,ancho,alto): 
@@ -347,7 +366,7 @@ class Inventario:
 
   def continuar_Button(self):
      item=self.treeProductos.item(self.treeProductos.selection())
-     text_warning=''
+
      if self.obj_eliminar.get()=='Producto':
         text_warning= f'Eliminar el registro del producto {item["values"][0]}, \ncorrespondiente al proveedor {item["text"]} '
      elif self.obj_eliminar.get()=='Proveedor':
@@ -389,8 +408,12 @@ class Inventario:
      self.btn_no = ttk.Button(self.ventana_confirmacion)
      self.btn_no.configure(text='No', command= self.ventana_eliminar.destroy)
      self.btn_no.place(anchor="w", x=317, y=150)
+     
      self.centra(self.ventana_confirmacion,500,200)
      
+     
+
+
  # Validaciones del sistema
   def valida_Id_Nit(self, event):
     ''' Valida que la longitud no sea mayor a 15 caracteres'''
