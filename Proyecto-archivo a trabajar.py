@@ -270,6 +270,7 @@ class Inventario:
 
   #Fución de manejo de eventos del sistema
   def run(self):
+      self.database_build()
       self.mainwindow.mainloop()
 
   def database_build(self):
@@ -518,20 +519,25 @@ class Inventario:
    
   def validar_ID(self):
      id=self.idNit.get()
-     search_id=self.accion_Buscar('*','Proveedor','idNitProv= ? ', (id,)).fetchone()
-     if search_id==None :
+     search_id=self.accion_Buscar('*','Proveedor','''idNitProv = ? ''',(id,)).fetchall()
+     print(search_id)
+     if search_id==[] :
         prov_Exist=False
-     else:
+     elif len(search_id)==1:
         prov_Exist=True
+     ''' elif len(search_id)>1:
+        prov_Exist='Busqueda inesacta'''
      return prov_Exist
   
   def validar_Cod(self):
      codigo=self.codigo.get()
-     search_id=self.accion_Buscar('*','Producto','Codigo= ? ', (codigo,)).fetchone()
-     if search_id==None :
+     search_cod=self.accion_Buscar('*','Producto',f'''Codigo = ? ''', (codigo,)).fetchall()
+     if search_cod==[]:
         cod_Exist=False
-     else:
+     elif len(search_cod)==1:
         cod_Exist=True
+     '''elif len(search_cod)>1:
+        cod_Exist='Busqueda inesacta' '''
      return cod_Exist
         
   #Rutina de limpieza de datos
@@ -755,16 +761,16 @@ class Inventario:
      id= self.idNit.get()
      cod= self.codigo.get()
      if id != "" and cod =="":
-        if self.validar_ID()==True:
-          search=self.accion_Buscar("*","Producto", "IdNit= ? ", (id,)).fetchall()
+        if self.validar_ID()==True :
+          search=self.accion_Buscar("*","Producto", f'''IdNit LIKE '{id}%' ORDER BY Codigo ''').fetchall()
           self.limpia_Campos()
           self.cargar_Datos_Buscados(search)
           self.cargar_Proveedor(id)
         else:
-           mssg.showerror('Atención!!','.. ¡El proveedor no existe! ..')
+           mssg.showerror('Atención!!','.. ¡No se encontro ninguna coincidencio con el nit de provvedor dado! ..')
      elif id == "" and cod !="":
         if self.validar_Cod()==True:
-           search=self.accion_Buscar("*","Producto", "Codigo= ? ",(cod,)).fetchall()
+           search=self.accion_Buscar("*","Producto", f'''Codigo LIKE '{cod}%' ORDER BY Codigo ''').fetchall()
            self.cargar_Datos_Buscados(search)
            self.limpia_Campos()
            if len(search)>1:
@@ -773,12 +779,12 @@ class Inventario:
               self.cargar_Producto(search[0])
               self.cargar_Proveedor(id)
         else:
-           mssg.showerror('Atención!!','.. ¡El producto no existe! ..')
+           mssg.showerror('Atención!!','.. ¡No se encontro ninguna coincidencio con el codigo de producto dado! ..')
      elif id != "" and cod !="":
         if self.validar_ID()==True and self.validar_Cod()==True:
-           search=self.accion_Buscar("*","Producto", "Codigo= ? AND IdNit= ? ", (cod , id,)).fetchall()
-           if search == None:
-              mssg.showerror('Atención!!','.. ¡El producto no corresponde al proveedor indicado! ..')
+           search=self.accion_Buscar("*","Producto", f'''Codigo LIKE '{cod}%' AND IdNit LIKE '{id}%' ORDER BY Codigo ''').fetchall()
+           if search == []:
+              mssg.showerror('Atención!!','.. ¡No se encontro ninguna coincidencia con el codigo y el nit dados! ..')
            else: 
               self.limpia_Campos()
               self.cargar_Datos_Buscados(search)
