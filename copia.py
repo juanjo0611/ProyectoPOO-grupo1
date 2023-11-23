@@ -5,13 +5,11 @@ import tkinter.ttk as ttk
 from tkinter import messagebox as mssg
 import sqlite3
 from os import path
-from datetime import datetime
+
+#import re
 
 #validar si la fecha es válida
 def es_Fecha_Valida(fecha_texto):
-
-   fecha_actual = datetime.now().date()
-
    espacios = fecha_texto.split('/')
     
    if len(espacios) != 3:
@@ -36,12 +34,9 @@ def es_Fecha_Valida(fecha_texto):
     
    if dia < 1 or dia > dias_por_mes[mes - 1]:
       return False  # Día fuera de rango para el mes dado
-   
-   fecha_ingresada = datetime(anio, mes, dia).date()
-   if fecha_ingresada > fecha_actual:
-      return False  # Si la fecha es futura
-   
+    
    return True  # La fecha es válida
+
 
 class Inventario:
   def __init__(self, master=None):
@@ -181,15 +176,10 @@ class Inventario:
 
     #Captura la fecha de compra del Producto
     self.fecha = ttk.Entry(self.frm1)
-    self.fecha.configure(width=10, foreground= "grey")
+    self.fecha.configure(width=10)
     self.fecha.place(anchor="nw", x=390, y=170)
-
-    self.fecha.insert(0, 'dd/mm/yyyy')
-    self.fecha.bind("<Key>", self.escribirFecha)
-    self.fecha.bind("<FocusOut>", self.validaFecha)
-    self.fecha.bind("<FocusIn>", self.borrarFecha)
-    self.fecha.bind("<BackSpace>", lambda _:self.fecha.delete(len(self.fecha.get())),'end')
-
+    self.fecha.bind("<FocusOut>", self.valida_Fecha)
+    self.fecha.bind("<BackSpace>", lambda _:self.fecha.delete(len(self.fecha.get())),'end')    
 
     #Separador
     self.separador2 = ttk.Separator(self.frm1)
@@ -300,52 +290,6 @@ class Inventario:
         self.btnBuscar.configure(state='disabled')
         self.btnEditar.configure(state='disabled')
         self.btnEliminar.configure(state='disabled')
-
-  def abrir_Ventana_Treeview(self):
-     # Crear una ventana secundaria usando toplevel
-     self.ventana_Treeview = tk.Toplevel(self.win)
-     self.ventana_Treeview.configure(
-            background="#afafaf",
-            padx=10,
-            pady=30)
-     self.ventana_Treeview.geometry("350x350")
-     self.ventana_Treeview.iconbitmap(self.ico)
-     self.ventana_Treeview.resizable(False, False)
-     self.ventana_Treeview.title("Treeview")
-    
-     #Árbol para mosrtar los datos de la B.D.
-     self.tree = ttk.Treeview(self.ventana_Treeview, style="estilo.Treeview")
-     self.tree.configure(selectmode="extended")
-     self.tree.bind('<Double-Button-1>',lambda _: self.carga_Datos()) 
-
-     # Etiquetas de las columnas para el TreeView
-     self.tree["columns"]=("Codigo","Descripcion","Und","Cantidad","Precio","Fecha")
-     # Características de las columnas del árbol
-     self.tree.column ("#0",          anchor="w",stretch=True,width=3)
-     self.tree.column ("Codigo",      anchor="w",stretch=True,width=3)
-     self.tree.column ("Descripcion", anchor="w",stretch=True,width=150)
-     self.tree.column ("Und",         anchor="w",stretch=True,width=3)
-     self.tree.column ("Cantidad",    anchor="w",stretch=True,width=3)
-     self.tree.column ("Precio",      anchor="w",stretch=True,width=8)
-     self.tree.column ("Fecha",       anchor="w",stretch=True,width=3) 
-
-     # Etiquetas de columnas con los nombres que se mostrarán por cada columna
-     self.tree.heading("#0",          anchor="center", text='ID / Nit')
-     self.tree.heading("Codigo",      anchor="center", text='Código')
-     self.tree.heading("Descripcion", anchor="center", text='Descripción')
-     self.tree.heading("Und",         anchor="center", text='Unidad')
-     self.tree.heading("Cantidad",    anchor="center", text='Cantidad')
-     self.tree.heading("Precio",      anchor="center", text='Precio')
-     self.tree.heading("Fecha",       anchor="center", text='Fecha')
-
-     #Carga los datos en treeProductos
-     #self.lee_treeProductos() 
-     self.tree.place(anchor="nw", height=400, width=790, x=2, y=230)
-
-     #Scrollbar en el eje Y de treeProductos
-     self.scrollbary=ttk.Scrollbar(self.tree, orient='vertical', command=self.tree.yview)
-     self.tree.configure(yscroll=self.scrollbary.set)
-     self.scrollbary.place(x=778, y=25, height=478)  
       
   def abrir_Ventana_Eliminar(self):
      # Crear una ventana secundaria usando toplevel
@@ -460,25 +404,31 @@ class Inventario:
             self.idNit.delete(0, tk.END)
             self.idNit.insert(0, contenido_sin_espacio)
 
-      if len(self.idNit.get()) > 15:
-         self.idNit.delete(15,tk.END)
+      if len(self.idNit.get()) >= 15:
+         self.idNit.delete(15,'end')
          mssg.showerror('Atención!!','.. ¡Máximo 15 caracteres! ..')
-
+         
+    else:
+        self.idNit.delete(14)
     
   def valida_Razon_Social(self, event):
      ''' Valida que la longitud no sea mayor a 25 caracteres'''
      if event.char:
-        if len(self.razonSocial.get()) > 25:
-           self.razonSocial.delete(25,tk.END)
+        if len(self.razonSocial.get()) >= 25:
+           self.razonSocial.delete(25,'end')
            mssg.showerror('Atención!!','.. ¡Máximo 25 caracteres! ..')
-          
+     else:
+        self.razonSocial.delete(24)
+
   def valida_Ciudad(self, event):
      ''' Valida que la longitud no sea mayor a 15 caracteres'''
      if event.char:
-        if len(self.ciudad.get()) > 15:
-           self.ciudad.delete(15,tk.END)
+        if len(self.ciudad.get()) >= 15:
+           self.ciudad.delete(15,'end')
            mssg.showerror('Atención!!','.. ¡Máximo 15 caracteres! ..')
-          
+     else:
+        self.ciudad.delete(14) 
+
   def valida_Codigo(self, event):
      ''' Valida que la longitud no sea mayor a 15 caracteres'''
      if event.char:
@@ -491,58 +441,72 @@ class Inventario:
             self.codigo.delete(0, tk.END)
             self.codigo.insert(0, contenido_sin_espacio)
 
-        if len(self.codigo.get()) > 15:
-           self.codigo.delete(15,tk.END)
+        if len(self.codigo.get()) >= 15:
+           self.codigo.delete(15,'end')
            mssg.showerror('Atención!!','.. ¡Máximo 15 caracteres! ..')
+     else:
+        self.codigo.delete(14)
 
   def valida_Descripcion(self, event):
      ''' Valida que la longitud no sea mayor a 50 caracteres'''
      if event.char:
-        if len(self.descripcion.get()) > 50:
+        if len(self.descripcion.get()) >= 50:
            self.descripcion.delete(50,'end')
            mssg.showerror('Atención!!','.. ¡Máximo 50 caracteres! ..')
-
+     else:
+        self.descripcion.delete(49) 
      
   def valida_Unidad(self, event):
      ''' Valida que la longitud no sea mayor a 10 caracteres'''
      if event.char:
-        if len(self.unidad.get()) > 10:
-           self.unidad.delete(10,tk.END)
+        if len(self.unidad.get()) >= 10:
+           self.unidad.delete(10,'end')
            mssg.showerror('Atención!!','.. ¡Máximo 10 caracteres! ..')
+     else:
+        self.unidad.delete(9)  
 
   def valida_Cantidad(self, event):
      ''' Valida que la longitud no sea mayor a 6 caracteres y sea int'''
      if event.char:
-        if len(self.cantidad.get()) > 6:
-            self.cantidad.delete(6,tk.END)
+        if len(self.cantidad.get()) >= 6:
+            self.cantidad.delete(6,'end')
             mssg.showerror('Atención!!','.. ¡Máximo 6 caracteres! ..')
-             
-        if self.cantidad.get().isdecimal() == False:
-            mssg.showerror('Atención!!','.. ¡Solo números! ..')
-            self.cantidad.delete(0, tk.END)
+            
+        else:
+            self.cantidad.delete(5)
+            
+            if self.cantidad.get().isdecimal() == False:
+                mssg.showerror('Atención!!','.. ¡Solo números! ..')
+                self.cantidad.delete(0, 'end')
   
   def valida_Precio(self, event):
     ''' Valida que la longitud no sea mayor a 9 caracteres y sea int'''
     if event.char:
-        if len(self.precio.get()) > 9:
-            self.precio.delete(9,tk.END)
+        if len(self.precio.get()) >= 9:
+            self.precio.delete(9,'end')
             mssg.showerror('Atención!!','.. ¡Máximo 9 caracteres! ..')
+            
+        else:
+            self.precio.delete(8)
 
     # Intentar convertir el contenido en un número
     try:
         float_numero = float(self.precio.get())
+        pass
     except ValueError:
         mssg.showerror('Atención!!','.. ¡Precio inválido! ..')
-        self.precio.delete(0, tk.END)  # Limpiar el contenido del Entry en caso de error              
+        self.precio.delete(0, 'end')  # Limpiar el contenido del Entry en caso de error              
             
-
-  def validaFecha(self, event):  
-      '''Valida que la fecha sea válida'''
-      if event.char:
-         if es_fecha_valida(self.fecha.get()) == False:
+  def valida_Fecha(self, event):  
+     ''' Valida que la fecha sea válida'''
+     if event.char:
+           ''' Valida que la longitud no sea mayor a 10 caracteres y sea int'''
+     if event.char:
+        #if re.match(r"^\d{2}/\d{2}/\d{4}$", self.fecha.get()):
+      
+         if es_Fecha_Valida(self.fecha.get()) == False:
             mssg.showerror('Atención!!','.. ¡Fecha Inválida! ..')
-            self.fecha.delete(0, tk.END)
-
+            self.fecha.delete(0, 'end')
    
   def validar_ID(self):
      id=self.idNit.get()
@@ -642,6 +606,34 @@ class Inventario:
         result = cursor.execute(query, parametros)
         conn.commit()
     return result
+
+  def lee_Tree_Productos(self):
+    ''' Carga los datos y Limpia la Tabla tablaTreeView '''
+    tabla_TreeView = self.treeProductos.get_children()
+    for linea in tabla_TreeView:
+        self.treeProductos.delete(linea) # Limpia la filas del TreeView
+    
+    # Seleccionando los datos de la BD
+    query = '''SELECT * from Proveedor INNER JOIN Inventario WHERE idNitProv = idNit ORDER BY idNitProv'''
+    db_rows = self.run_Query(query).fetchall # db_rows contine la vista del query
+    
+
+    # Insertando los datos de la BD en treeProductos de la pantalla
+    for row in db_rows:
+      self.treeProductos.insert(0, text = row[0], values = [row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8]])
+
+    ''' Al final del for row queda con la última tupla
+        y se usan para cargar las variables de captura
+    '''
+    self.idNit.insert(0,row[0])
+    self.razonSocial.insert(0,row[1])
+    self.ciudad.insert(0,row[2])
+    self.codigo.insert(0,row[4])
+    self.descripcion.insert(0,row[5])
+    self.unidad.insert(0,row[6])
+    self.cantidad.insert(0,row[7])
+    self.precio.insert(0,row[8])
+    self.fecha.insert(0,row[9])  
     
   def limpiar_Treeview(self):
     tabla_TreeView = self.treeProductos.get_children()
@@ -706,7 +698,11 @@ class Inventario:
              mssg.showerror('Atención!!','.. ¡El producto ya esta relacionado con el proveedor indicado! ..')
        elif fecha=="":
             mssg.showerror('Atención!!','.. ¡Digite una fecha para registrar! ..')
-
+          
+  def edita_Tree_Proveedores(self, event=None):
+    ''' Edita una tupla del TreeView'''
+    pass
+      
   def elimina_Registro(self, obj):
     '''Elimina un Registro en la BD'''
     id=obj["text"]
@@ -842,30 +838,6 @@ class Inventario:
         self.abrir_Ventana_Eliminar()
      elif self.treeProductos.selection()==():
         mssg.showerror('.. Error!..', ' .. No se ha seleccionado ningun registro a eliminar! .. ')
-
-  def escribirFecha(self, event):
-    #para que solo se ejecuute si escribe números y tiene menos de diez caracteres
-    if event.char.isdigit() and len(self.fecha.get())<10:
-        
-        texto = self.fecha.get()
-        letras = 0
-        for i in texto:
-            letras +=1
-
-        if letras == 2:
-            self.fecha.insert(2,"/")
-        elif letras == 5:
-            self.fecha.insert(5,"/")
-    else:
-      return 'break'
-    #se usa el return break para evitar que el evento se propague
-
-  def borrarFecha(self,event):
-
-   if self.fecha.get() == "dd/mm/yyyy":
-      self.fecha.delete(0, tk.END)
-      self.fecha.config(foreground='black')
-
      
 if __name__ == "__main__":
     app = Inventario()
