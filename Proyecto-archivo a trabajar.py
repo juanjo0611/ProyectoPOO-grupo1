@@ -8,9 +8,10 @@ from os import path
 from datetime import datetime
 
 #validar si la fecha es válida
-def es_fecha_valida(fecha_texto):
+def es_Fecha_Valida(fecha_texto):
 
    fecha_actual = datetime.now().date()
+
    espacios = fecha_texto.split('/')
     
    if len(espacios) != 3:
@@ -182,11 +183,13 @@ class Inventario:
     self.fecha = ttk.Entry(self.frm1)
     self.fecha.configure(width=10, foreground= "grey")
     self.fecha.place(anchor="nw", x=390, y=170)
+
     self.fecha.insert(0, 'dd/mm/yyyy')
     self.fecha.bind("<Key>", self.escribirFecha)
     self.fecha.bind("<FocusOut>", self.validaFecha)
     self.fecha.bind("<FocusIn>", self.borrarFecha)
     self.fecha.bind("<BackSpace>", lambda _:self.fecha.delete(len(self.fecha.get())),'end')
+
 
     #Separador
     self.separador2 = ttk.Separator(self.frm1)
@@ -343,7 +346,6 @@ class Inventario:
      self.scrollbary=ttk.Scrollbar(self.tree, orient='vertical', command=self.tree.yview)
      self.tree.configure(yscroll=self.scrollbary.set)
      self.scrollbary.place(x=778, y=25, height=478)  
-     
       
   def abrir_Ventana_Eliminar(self):
      # Crear una ventana secundaria usando toplevel
@@ -458,31 +460,25 @@ class Inventario:
             self.idNit.delete(0, tk.END)
             self.idNit.insert(0, contenido_sin_espacio)
 
-      if len(self.idNit.get()) >= 15:
-         self.idNit.delete(15,'end')
+      if len(self.idNit.get()) > 15:
+         self.idNit.delete(15,tk.END)
          mssg.showerror('Atención!!','.. ¡Máximo 15 caracteres! ..')
-         
-    else:
-        self.idNit.delete(14)
+
     
   def valida_Razon_Social(self, event):
      ''' Valida que la longitud no sea mayor a 25 caracteres'''
      if event.char:
-        if len(self.razonSocial.get()) >= 25:
-           self.razonSocial.delete(25,'end')
+        if len(self.razonSocial.get()) > 25:
+           self.razonSocial.delete(25,tk.END)
            mssg.showerror('Atención!!','.. ¡Máximo 25 caracteres! ..')
-     else:
-        self.razonSocial.delete(24)
-
+          
   def valida_Ciudad(self, event):
      ''' Valida que la longitud no sea mayor a 15 caracteres'''
      if event.char:
-        if len(self.ciudad.get()) >= 15:
-           self.ciudad.delete(15,'end')
+        if len(self.ciudad.get()) > 15:
+           self.ciudad.delete(15,tk.END)
            mssg.showerror('Atención!!','.. ¡Máximo 15 caracteres! ..')
-     else:
-        self.ciudad.delete(14) 
-
+          
   def valida_Codigo(self, event):
      ''' Valida que la longitud no sea mayor a 15 caracteres'''
      if event.char:
@@ -495,68 +491,58 @@ class Inventario:
             self.codigo.delete(0, tk.END)
             self.codigo.insert(0, contenido_sin_espacio)
 
-        if len(self.codigo.get()) >= 15:
-           self.codigo.delete(15,'end')
+        if len(self.codigo.get()) > 15:
+           self.codigo.delete(15,tk.END)
            mssg.showerror('Atención!!','.. ¡Máximo 15 caracteres! ..')
-     else:
-        self.codigo.delete(14)
 
   def valida_Descripcion(self, event):
      ''' Valida que la longitud no sea mayor a 50 caracteres'''
      if event.char:
-        if len(self.descripcion.get()) >= 50:
+        if len(self.descripcion.get()) > 50:
            self.descripcion.delete(50,'end')
            mssg.showerror('Atención!!','.. ¡Máximo 50 caracteres! ..')
-     else:
-        self.descripcion.delete(49) 
+
      
   def valida_Unidad(self, event):
      ''' Valida que la longitud no sea mayor a 10 caracteres'''
      if event.char:
-        if len(self.unidad.get()) >= 10:
-           self.unidad.delete(10,'end')
+        if len(self.unidad.get()) > 10:
+           self.unidad.delete(10,tk.END)
            mssg.showerror('Atención!!','.. ¡Máximo 10 caracteres! ..')
-     else:
-        self.unidad.delete(9)  
 
   def valida_Cantidad(self, event):
      ''' Valida que la longitud no sea mayor a 6 caracteres y sea int'''
      if event.char:
-        if len(self.cantidad.get()) >= 6:
-            self.cantidad.delete(6,'end')
+        if len(self.cantidad.get()) > 6:
+            self.cantidad.delete(6,tk.END)
             mssg.showerror('Atención!!','.. ¡Máximo 6 caracteres! ..')
-            
-        else:
-            self.cantidad.delete(5)
-            
-            if self.cantidad.get().isdecimal() == False:
-                mssg.showerror('Atención!!','.. ¡Solo números! ..')
-                self.cantidad.delete(0, 'end')
+             
+        if self.cantidad.get().isdecimal() == False:
+            mssg.showerror('Atención!!','.. ¡Solo números! ..')
+            self.cantidad.delete(0, tk.END)
   
   def valida_Precio(self, event):
     ''' Valida que la longitud no sea mayor a 9 caracteres y sea int'''
     if event.char:
-        if len(self.precio.get()) >= 9:
-            self.precio.delete(9,'end')
+        if len(self.precio.get()) > 9:
+            self.precio.delete(9,tk.END)
             mssg.showerror('Atención!!','.. ¡Máximo 9 caracteres! ..')
-            
-        else:
-            self.precio.delete(8)
 
     # Intentar convertir el contenido en un número
     try:
         float_numero = float(self.precio.get())
-        pass
     except ValueError:
         mssg.showerror('Atención!!','.. ¡Precio inválido! ..')
-        self.precio.delete(0, 'end')  # Limpiar el contenido del Entry en caso de error              
+        self.precio.delete(0, tk.END)  # Limpiar el contenido del Entry en caso de error              
             
+
   def validaFecha(self, event):  
       '''Valida que la fecha sea válida'''
       if event.char:
          if es_fecha_valida(self.fecha.get()) == False:
             mssg.showerror('Atención!!','.. ¡Fecha Inválida! ..')
-            self.fecha.delete(0, 'end')
+            self.fecha.delete(0, tk.END)
+
    
   def validar_ID(self):
      id=self.idNit.get()
@@ -656,34 +642,6 @@ class Inventario:
         result = cursor.execute(query, parametros)
         conn.commit()
     return result
-
-  def lee_Tree_Productos(self):
-    ''' Carga los datos y Limpia la Tabla tablaTreeView '''
-    tabla_TreeView = self.treeProductos.get_children()
-    for linea in tabla_TreeView:
-        self.treeProductos.delete(linea) # Limpia la filas del TreeView
-    
-    # Seleccionando los datos de la BD
-    query = '''SELECT * from Proveedor INNER JOIN Inventario WHERE idNitProv = idNit ORDER BY idNitProv'''
-    db_rows = self.run_Query(query).fetchall # db_rows contine la vista del query
-    
-
-    # Insertando los datos de la BD en treeProductos de la pantalla
-    for row in db_rows:
-      self.treeProductos.insert(0, text = row[0], values = [row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8]])
-
-    ''' Al final del for row queda con la última tupla
-        y se usan para cargar las variables de captura
-    '''
-    self.idNit.insert(0,row[0])
-    self.razonSocial.insert(0,row[1])
-    self.ciudad.insert(0,row[2])
-    self.codigo.insert(0,row[4])
-    self.descripcion.insert(0,row[5])
-    self.unidad.insert(0,row[6])
-    self.cantidad.insert(0,row[7])
-    self.precio.insert(0,row[8])
-    self.fecha.insert(0,row[9])  
     
   def limpiar_Treeview(self):
     tabla_TreeView = self.treeProductos.get_children()
@@ -748,11 +706,7 @@ class Inventario:
              mssg.showerror('Atención!!','.. ¡El producto ya esta relacionado con el proveedor indicado! ..')
        elif fecha=="":
             mssg.showerror('Atención!!','.. ¡Digite una fecha para registrar! ..')
-          
-  def edita_Tree_Proveedores(self, event=None):
-    ''' Edita una tupla del TreeView'''
-    pass
-      
+
   def elimina_Registro(self, obj):
     '''Elimina un Registro en la BD'''
     id=obj["text"]
@@ -911,6 +865,7 @@ class Inventario:
    if self.fecha.get() == "dd/mm/yyyy":
       self.fecha.delete(0, tk.END)
       self.fecha.config(foreground='black')
+
      
 if __name__ == "__main__":
     app = Inventario()
