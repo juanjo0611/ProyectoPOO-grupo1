@@ -269,10 +269,7 @@ class Inventario:
     self.mainwindow = self.win
 
   #Fución de manejo de eventos del sistema
-  def run(self):
-      self.database_build()
-      self.mainwindow.mainloop()
-
+  
   def database_build(self):
      producto=''' CREATE TABLE IF NOT EXISTS "Producto" (
 	  "IdNit"	VARCHAR(15),
@@ -291,6 +288,9 @@ class Inventario:
      self.run_Query(proveedor)
      self.run_Query(producto)
 
+  def run(self):
+      self.database_build()
+      self.mainwindow.mainloop()
 
   ''' ......... Métodos utilitarios del sistema .............'''
   #Rutina de centrado de pantalla
@@ -310,110 +310,6 @@ class Inventario:
         self.btnBuscar.configure(state='disabled')
         self.btnEditar.configure(state='disabled')
         self.btnEliminar.configure(state='disabled')
-      
-  def abrir_Ventana_Eliminar(self):
-     # Crear una ventana secundaria usando toplevel
-     self.ventana_eliminar = tk.Toplevel(self.win)
-     self.ventana_eliminar.configure(
-            background="#afafaf",
-            padx=10,
-            pady=30)
-     self.ventana_eliminar.geometry("350x350")
-     self.ventana_eliminar.iconbitmap(self.ico)
-     self.ventana_eliminar.resizable(False, False)
-     self.ventana_eliminar.title("Eliminar")
-
-     self.frame_eliminar_1 = ttk.Frame(self.ventana_eliminar)
-     self.frame_eliminar_1.place(
-            anchor="center",
-            height=200,
-            width=250,
-            x=165,
-            y=100)
-
-     self.obj_eliminar = tk.StringVar()
-
-     self.radiobutton1 = ttk.Radiobutton(self.frame_eliminar_1)
-     self.radiobutton1.configure(
-            text='Eliminar eL Producto \nseleccionado',
-            value="Producto",
-            variable=self.obj_eliminar)
-     self.radiobutton1.place(anchor="w", height=50, x=10, y=50)
-     
-     self.radiobutton2 = ttk.Radiobutton(self.frame_eliminar_1)
-     self.radiobutton2.configure(
-            text='Eliminar Proveedor y todos sus \nproductos',
-            value="Proveedor",
-            variable=self.obj_eliminar)
-     self.radiobutton2.place(anchor="w", x=10, y=95)
-
-     self.radiobutton3 = ttk.Radiobutton(self.frame_eliminar_1)
-     self.radiobutton3.configure(
-            text='Eliminar todos los productos \ncon el codigo seleccionado',
-            value="Todos los productos",
-            variable=self.obj_eliminar)
-     self.radiobutton3.place(anchor="w", x=10, y=145)
-    
-     self.btn_cancelar= ttk.Button(self.ventana_eliminar)
-     self.btn_cancelar.configure(text='Cancelar', command= self.ventana_eliminar.destroy)
-     self.btn_cancelar.pack(side="bottom")
-
-     self.btn_continuar = ttk.Button(self.ventana_eliminar)
-     self.btn_continuar.configure(text='Continuar', command= self.continuar_Button)
-     self.btn_continuar.pack(side="bottom")
-
-     # Centrar la ventana emergente en la pantalla
-     self.centra(self.ventana_eliminar, 350, 350)
-
-  def continuar_Button(self):
-     item=self.treeProductos.item(self.treeProductos.selection())
-
-     if self.obj_eliminar.get()=='Producto':
-        text_warning= f'Eliminar el registro del producto {item["values"][0]}, \ncorrespondiente al proveedor {item["text"]} '
-     elif self.obj_eliminar.get()=='Proveedor':
-        text_warning=f'Eliminar el proveedor {item["text"]} y todos \nlos registros relacionados a él '
-     elif self.obj_eliminar.get()== 'Todos los productos':
-        text_warning=f'Eliminar todos los registros relacionados \nal producto {item["values"][0]} '
-
-     self.warning= self.path + r'\warning.png'
-
-     self.ventana_confirmacion = tk.Toplevel(self.ventana_eliminar)
-     self.ventana_confirmacion.configure(
-            background="#ffffff",
-            height=200,
-            padx=10,
-            pady=10,
-            width=500)
-     self.ventana_confirmacion.iconbitmap(self.ico)
-     self.ventana_confirmacion.resizable(False, False)
-     self.ventana_confirmacion.title("Warning")
-
-     self.img_warning = tk.PhotoImage(file=self.warning)
-
-     self.lebel1_warning = ttk.Label(self.ventana_confirmacion)
-     self.lebel1_warning.configure(image=self.img_warning)
-     self.lebel1_warning.place(anchor="w", x=20, y=90)
-
-     self.label2_warning = ttk.Label(self.ventana_confirmacion)
-     self.label2_warning.configure(
-            background="#ffffff",
-            font="{Arial} 12 {bold}",
-            text=f'Esta seguro que quiere realizar \nla siquiente acción: \n\n{text_warning}')
-     self.label2_warning.place(anchor="w", x=130, y=60)
-
-     self.btn_yes = ttk.Button(self.ventana_confirmacion)
-     self.btn_yes.configure(text='Si')
-     self.btn_yes.place(anchor="w", width=70, x=243, y=150)
-     self.btn_yes.bind('<Button-1>', lambda _: (self.elimina_Registro(item),self.ventana_eliminar.destroy()))
-
-     self.btn_no = ttk.Button(self.ventana_confirmacion)
-     self.btn_no.configure(text='No', command= self.ventana_eliminar.destroy)
-     self.btn_no.place(anchor="w", x=317, y=150)
-     
-     self.centra(self.ventana_confirmacion,500,200)
-     
-     
-
 
  # Validaciones del sistema
   def valida_Id_Nit(self, event):
@@ -556,61 +452,14 @@ class Inventario:
       self.precio.delete(0,'end')
       self.fecha.delete(0,'end')
       
- 
-  #Rutina para cargar los datos en el árbol  
-  def carga_Datos(self):
-    seleccion=self.treeProductos.selection()
-    if seleccion != ():
-       self.estado_Buttons(False)
-       self.limpia_Campos()
-       item=self.treeProductos.item(seleccion)
-       self.cargar_Proveedor(item ['text'])
-       self.idNit.configure(state = 'readonly')
-       self.codigo.insert(0,item['values'][0])
-       self.codigo.configure(state='readonly')
-       self.descripcion.insert(0,item['values'][1])
-       self.unidad.insert(0,item['values'][2])
-       self.cantidad.insert(0,item['values'][3])
-       self.precio.insert(0,item['values'][4])
-       self.fecha.insert(0,item['values'][5])
-       self.actualiza=True
-       dato_cargado=[[item['text'],item['values'][0],item['values'][1],item['values'][2],item['values'][3],item['values'][4],item['values'][5]]]
-       self.cargar_Datos_Buscados(dato_cargado)
-       mssg.showinfo('Confirmación',
-                     '''.. Se ha activado el modo Editar, puede modificar la información del producto y provvedor seleccionado ..''')
-    elif seleccion== ():
-       mssg.showerror('Atención!!','.. ¡No se ha seleccionado nada! ..')
+  def limpiar_Treeview(self):
+    tabla_TreeView = self.treeProductos.get_children()
+    for linea in tabla_TreeView:
+        self.treeProductos.delete(linea)
 
-  def actualizar_datos(self):
-     id_nit = self.idNit.get()
-     razon_social = self.razonSocial.get()
-     ciudad = self.ciudad.get()
-     codigo = self.codigo.get()
-     descripcion = self.descripcion.get()
-     unidad = self.unidad.get()
-     cantidad = float(self.cantidad.get())
-     precio = float(self.precio.get())
-     fecha = self.fecha.get()
-     proveedor=self.accion_Buscar('*', 'Proveedor', ' idNitProv = ? ', (id_nit,)).fetchone()
-     producto=self.accion_Buscar('*', 'Producto', ' IdNit = ? AND Codigo = ? ', (id_nit, codigo,)).fetchone()
-     proveedor_update=(id_nit,razon_social,ciudad)
-     producto_update=(id_nit,codigo,descripcion,unidad,cantidad,precio,fecha)
-     if proveedor == proveedor_update:
-        if producto==producto_update:
-           mssg.showinfo('.. Confirmación ..', '.. No se realizo ningun cambio, saliendo del modo Editar ..')
-        elif producto!=producto_update:
-           self.actualizar_Producto((descripcion,unidad,cantidad,precio,fecha,id_nit,codigo,))
-           self.cargar_Datos_Buscados([[id_nit,codigo,descripcion,unidad,cantidad,precio,fecha]])
-           mssg.showinfo('.. Confirmación ..', '.. Producto actualizado ..')
-     elif proveedor!=proveedor_update:
-        self.actualizar_Proveedor((razon_social,ciudad,id_nit,))
-        mssg.showinfo('.. Confirmación ..', '.. Proveedor actualizado ..')   
-        if producto!=producto_update:
-           self.actualizar_Producto((descripcion,unidad,cantidad,precio,fecha,id_nit,codigo,))
-           self.cargar_Datos_Buscados([[id_nit,codigo,descripcion,unidad,cantidad,precio,fecha]])
-           mssg.showinfo('.. Confirmación ..', '.. Producto actualizado ..')
-     self.actualiza=None
-     self.limpia_Campos()
+  def cargar_Datos_Treeview(self,db_rows):
+      for row in db_rows:
+         self.treeProductos.insert('',0, text = row[0], values = [row[1],row[2],row[3],row[4],row[5],row[6]])       
            
   # Operaciones con la base de datos
   def run_Query(self, query, parametros = ()):
@@ -620,99 +469,7 @@ class Inventario:
         result = cursor.execute(query, parametros)
         conn.commit()
     return result
-    
-  def limpiar_Treeview(self):
-    tabla_TreeView = self.treeProductos.get_children()
-    for linea in tabla_TreeView:
-        self.treeProductos.delete(linea)
-
-  def cargar_Datos_Treeview(self,db_rows):
-      for row in db_rows:
-         self.treeProductos.insert('',0, text = row[0], values = [row[1],row[2],row[3],row[4],row[5],row[6]])
-
-  def cargar_Datos_Buscados(self,search):
-      self.limpiar_Treeview()
-      self.cargar_Datos_Treeview(search)
           
-  def adiciona_Registro(self, event=None):
-    '''Adiciona un producto a la BD si la validación es True'''
-    # Obtener los valores de los campos de entrada
-    id_nit = self.idNit.get()
-    razon_social = self.razonSocial.get()
-    ciudad = self.ciudad.get()
-    codigo = self.codigo.get()
-    descripcion = self.descripcion.get()
-    unidad = self.unidad.get()
-    cantidad = self.cantidad.get()
-    precio = self.precio.get()
-    fecha = self.fecha.get()
-    relacion=self.accion_Buscar('*','Producto','IdNit = ? AND Codigo = ?',(id_nit, codigo,)).fetchone()
-
-    if id_nit=="" and codigo=="":
-       mssg.showerror('Atención!!','.. ¡No se han especificado ningun dato para guardar! ..')
-
-    elif id_nit=="" and codigo!="":
-       mssg.showerror('Atención!!','.. ¡No se especifico ningun proveedor para el producto! ..')
-
-    elif codigo=="" and id_nit!= "":
-       
-       if self.validar_ID()==False:
-          self.insertar_Proveedor(id_nit, razon_social,ciudad)
-          mssg.showinfo('Confirmación','.. El proveedor a sido registrado correctamente ..')
-
-       elif self.validar_ID()==True:
-          mssg.showerror('Atención!!','.. ¡El proveedor ya existe no puede ser insertado otra vez! ..')
-
-    elif id_nit!="" and codigo!="":
-       if fecha!="":
-          if (self.validar_ID()==False and self.validar_Cod()==False) or (self.validar_Cod()==True and self.validar_ID()==False):
-             self.insertar_Proveedor(id_nit,razon_social,ciudad)
-             mssg.showinfo('Confirmación','.. El proveedor a sido registrado correctamente ..')
-             self.insertar_Producto(id_nit,codigo,descripcion,unidad,cantidad, precio, fecha)
-             mssg.showinfo('Confirmación','.. El producto a sido registrado correctamente ..')
-             datos=self.accion_Buscar("*","Producto"," IdNit = ? AND Codigo = ?",(id_nit,codigo,)).fetchall()
-             self.cargar_Datos_Buscados(datos)
-
-          elif (self.validar_ID()==True and self.validar_Cod()==False) or (relacion == None):
-          
-             self.insertar_Producto(id_nit,codigo,descripcion,unidad,cantidad, precio, fecha)
-             mssg.showinfo('Confirmación','.. El producto a sido registrado correctamente ..')
-             datos=self.accion_Buscar("*","Producto"," IdNit = ? AND Codigo = ?",(id_nit,codigo,)).fetchall()
-             self.cargar_Datos_Buscados(datos)
-
-          elif relacion!= None:  
-             mssg.showerror('Atención!!','.. ¡El producto ya esta relacionado con el proveedor indicado! ..')
-       elif fecha=="":
-            mssg.showerror('Atención!!','.. ¡Digite una fecha para registrar! ..')
-          
-  def elimina_Registro(self, obj):
-    '''Elimina un Registro en la BD'''
-    id=obj["text"]
-    codigo=obj["values"][0]
-    if self.obj_eliminar.get()=='Producto':
-       try:
-          self.accion_Eliminar('Producto','IdNit = ? AND Codigo = ? ',(id, codigo,))
-       except:
-          mssg.showerror('.. Error! ..', f'Se ha producido un error al tratar de eliminar el registro del producto {codigo}, correspondiente al proveedor {id}')
-       else:
-          mssg.showinfo(' .. Confirmación .. ', f'Se ha eliminado el registro del producto {codigo}, correspondiente al proveedor {id} correctamente')
-    elif self.obj_eliminar.get()=='Proveedor':
-       try:
-          self.accion_Eliminar('Producto','IdNit = ? ',(id,))
-          self.accion_Eliminar('Proveedor','idNitProv = ? ', (id,))
-       except:
-          mssg.showerror('.. Error! ..', f'Se ha producido un error al tratar de eliminar el proveedor {id} y todos los registros relacionados a él')
-       else:
-          mssg.showinfo(' .. Confirmación .. ', f'Se ha eliminado el proveedor {id} y todos los registros relacionados a él correctamente')
-    elif self.obj_eliminar.get()=='Todos los productos':
-       try:
-          self.accion_Eliminar('Producto','Codigo = ? ',(codigo,))
-       except:
-          mssg.showerror('.. Error! ..', f'Se ha producido un error al tratar de eliminar todos los registros relacionados con el producto {codigo}')
-       else:
-          mssg.showinfo(' .. Confirmación .. ', f'Se ha eliminado todos los registros relacionados al producto {codigo}')      
-        
-  
   def accion_Buscar(self,seleccion,tabla,condicion, valoresdecodicion =()):
     search=f'''SELECT {seleccion} FROM {tabla} WHERE {condicion}'''
     resultado=self.run_Query(search,valoresdecodicion)
@@ -797,6 +554,10 @@ class Inventario:
         elif self.validar_ID()==False and self.validar_Cod()==False:
            mssg.showerror('Atención!!','.. ¡Ni el producto, ni el proveedor existen! ..')
 
+  def cargar_Datos_Buscados(self,search):
+      self.limpiar_Treeview()
+      self.cargar_Datos_Treeview(search)
+
   def cancel_Button(self):
      self.limpiar_Treeview()
      self.limpia_Campos()
@@ -811,15 +572,245 @@ class Inventario:
      elif self.actualiza== True:
         self.actualizar_datos()
         self.estado_Buttons(True)
-        
+
+  def adiciona_Registro(self, event=None):
+    '''Adiciona un producto a la BD si la validación es True'''
+    # Obtener los valores de los campos de entrada
+    id_nit = self.idNit.get()
+    razon_social = self.razonSocial.get()
+    ciudad = self.ciudad.get()
+    codigo = self.codigo.get()
+    descripcion = self.descripcion.get()
+    unidad = self.unidad.get()
+    cantidad = self.cantidad.get()
+    precio = self.precio.get()
+    fecha = self.fecha.get()
+    relacion=self.accion_Buscar('*','Producto','IdNit = ? AND Codigo = ?',(id_nit, codigo,)).fetchone()
+
+    if id_nit=="" and codigo=="":
+       mssg.showerror('Atención!!','.. ¡No se han especificado ningun dato para guardar! ..')
+
+    elif id_nit=="" and codigo!="":
+       mssg.showerror('Atención!!','.. ¡No se especifico ningun proveedor para el producto! ..')
+
+    elif codigo=="" and id_nit!= "":
+       
+       if self.validar_ID()==False:
+          self.insertar_Proveedor(id_nit, razon_social,ciudad)
+          mssg.showinfo('Confirmación','.. El proveedor a sido registrado correctamente ..')
+
+       elif self.validar_ID()==True:
+          mssg.showerror('Atención!!','.. ¡El proveedor ya existe no puede ser insertado otra vez! ..')
+
+    elif id_nit!="" and codigo!="":
+       if fecha!="":
+          if (self.validar_ID()==False and self.validar_Cod()==False) or (self.validar_Cod()==True and self.validar_ID()==False):
+             self.insertar_Proveedor(id_nit,razon_social,ciudad)
+             mssg.showinfo('Confirmación','.. El proveedor a sido registrado correctamente ..')
+             self.insertar_Producto(id_nit,codigo,descripcion,unidad,cantidad, precio, fecha)
+             mssg.showinfo('Confirmación','.. El producto a sido registrado correctamente ..')
+             datos=self.accion_Buscar("*","Producto"," IdNit = ? AND Codigo = ?",(id_nit,codigo,)).fetchall()
+             self.cargar_Datos_Buscados(datos)
+
+          elif (self.validar_ID()==True and self.validar_Cod()==False) or (relacion == None):
+          
+             self.insertar_Producto(id_nit,codigo,descripcion,unidad,cantidad, precio, fecha)
+             mssg.showinfo('Confirmación','.. El producto a sido registrado correctamente ..')
+             datos=self.accion_Buscar("*","Producto"," IdNit = ? AND Codigo = ?",(id_nit,codigo,)).fetchall()
+             self.cargar_Datos_Buscados(datos)
+
+          elif relacion!= None:  
+             mssg.showerror('Atención!!','.. ¡El producto ya esta relacionado con el proveedor indicado! ..')
+       elif fecha=="":
+            mssg.showerror('Atención!!','.. ¡Digite una fecha para registrar! ..')
+  
   def edit_Button(self):
-     self.carga_Datos()
+    seleccion=self.treeProductos.selection()
+    if seleccion != ():
+       self.estado_Buttons(False)
+       self.limpia_Campos()
+       item=self.treeProductos.item(seleccion)
+       self.cargar_Proveedor(item ['text'])
+       self.idNit.configure(state = 'readonly')
+       self.codigo.insert(0,item['values'][0])
+       self.codigo.configure(state='readonly')
+       self.descripcion.insert(0,item['values'][1])
+       self.unidad.insert(0,item['values'][2])
+       self.cantidad.insert(0,item['values'][3])
+       self.precio.insert(0,item['values'][4])
+       self.fecha.insert(0,item['values'][5])
+       self.actualiza=True
+       dato_cargado=[[item['text'],item['values'][0],item['values'][1],item['values'][2],item['values'][3],item['values'][4],item['values'][5]]]
+       self.cargar_Datos_Buscados(dato_cargado)
+       mssg.showinfo('Confirmación',
+                     '''.. Se ha activado el modo Editar, puede modificar la información del producto y provvedor seleccionado ..''')
+    elif seleccion== ():
+       mssg.showerror('Atención!!','.. ¡No se ha seleccionado nada! ..')
+
+  def actualizar_datos(self):
+     id_nit = self.idNit.get()
+     razon_social = self.razonSocial.get()
+     ciudad = self.ciudad.get()
+     codigo = self.codigo.get()
+     descripcion = self.descripcion.get()
+     unidad = self.unidad.get()
+     cantidad = float(self.cantidad.get())
+     precio = float(self.precio.get())
+     fecha = self.fecha.get()
+     proveedor=self.accion_Buscar('*', 'Proveedor', ' idNitProv = ? ', (id_nit,)).fetchone()
+     producto=self.accion_Buscar('*', 'Producto', ' IdNit = ? AND Codigo = ? ', (id_nit, codigo,)).fetchone()
+     proveedor_update=(id_nit,razon_social,ciudad)
+     producto_update=(id_nit,codigo,descripcion,unidad,cantidad,precio,fecha)
+     if proveedor == proveedor_update:
+        if producto==producto_update:
+           mssg.showinfo('.. Confirmación ..', '.. No se realizo ningun cambio, saliendo del modo Editar ..')
+        elif producto!=producto_update:
+           self.actualizar_Producto((descripcion,unidad,cantidad,precio,fecha,id_nit,codigo,))
+           self.cargar_Datos_Buscados([[id_nit,codigo,descripcion,unidad,cantidad,precio,fecha]])
+           mssg.showinfo('.. Confirmación ..', '.. Producto actualizado ..')
+     elif proveedor!=proveedor_update:
+        self.actualizar_Proveedor((razon_social,ciudad,id_nit,))
+        mssg.showinfo('.. Confirmación ..', '.. Proveedor actualizado ..')   
+        if producto!=producto_update:
+           self.actualizar_Producto((descripcion,unidad,cantidad,precio,fecha,id_nit,codigo,))
+           self.cargar_Datos_Buscados([[id_nit,codigo,descripcion,unidad,cantidad,precio,fecha]])
+           mssg.showinfo('.. Confirmación ..', '.. Producto actualizado ..')
+     self.actualiza=None
+     self.limpia_Campos()
 
   def eliminar_Button(self):
      if self.treeProductos.selection() != ():
         self.abrir_Ventana_Eliminar()
      elif self.treeProductos.selection()==():
         mssg.showerror('.. Error!..', ' .. No se ha seleccionado ningun registro a eliminar! .. ')
+
+  def elimina_Registro(self, obj):
+    '''Elimina un Registro en la BD'''
+    id=obj["text"]
+    codigo=obj["values"][0]
+    if self.obj_eliminar.get()=='Producto':
+       try:
+          self.accion_Eliminar('Producto','IdNit = ? AND Codigo = ? ',(id, codigo,))
+       except:
+          mssg.showerror('.. Error! ..', f'Se ha producido un error al tratar de eliminar el registro del producto {codigo}, correspondiente al proveedor {id}')
+       else:
+          mssg.showinfo(' .. Confirmación .. ', f'Se ha eliminado el registro del producto {codigo}, correspondiente al proveedor {id} correctamente')
+    elif self.obj_eliminar.get()=='Proveedor':
+       try:
+          self.accion_Eliminar('Producto','IdNit = ? ',(id,))
+          self.accion_Eliminar('Proveedor','idNitProv = ? ', (id,))
+       except:
+          mssg.showerror('.. Error! ..', f'Se ha producido un error al tratar de eliminar el proveedor {id} y todos los registros relacionados a él')
+       else:
+          mssg.showinfo(' .. Confirmación .. ', f'Se ha eliminado el proveedor {id} y todos los registros relacionados a él correctamente')
+    elif self.obj_eliminar.get()=='Todos los productos':
+       try:
+          self.accion_Eliminar('Producto','Codigo = ? ',(codigo,))
+       except:
+          mssg.showerror('.. Error! ..', f'Se ha producido un error al tratar de eliminar todos los registros relacionados con el producto {codigo}')
+       else:
+          mssg.showinfo(' .. Confirmación .. ', f'Se ha eliminado todos los registros relacionados al producto {codigo}')      
+
+  def abrir_Ventana_Eliminar(self):
+     # Crear una ventana secundaria usando toplevel
+     self.ventana_eliminar = tk.Toplevel(self.win)
+     self.ventana_eliminar.configure(
+            background="#afafaf",
+            padx=10,
+            pady=30)
+     self.ventana_eliminar.geometry("350x350")
+     self.ventana_eliminar.iconbitmap(self.ico)
+     self.ventana_eliminar.resizable(False, False)
+     self.ventana_eliminar.title("Eliminar")
+
+     self.frame_eliminar_1 = ttk.Frame(self.ventana_eliminar)
+     self.frame_eliminar_1.place(
+            anchor="center",
+            height=200,
+            width=250,
+            x=165,
+            y=100)
+
+     self.obj_eliminar = tk.StringVar()
+
+     self.radiobutton1 = ttk.Radiobutton(self.frame_eliminar_1)
+     self.radiobutton1.configure(
+            text='Eliminar eL Producto \nseleccionado',
+            value="Producto",
+            variable=self.obj_eliminar)
+     self.radiobutton1.place(anchor="w", height=50, x=10, y=50)
+     
+     self.radiobutton2 = ttk.Radiobutton(self.frame_eliminar_1)
+     self.radiobutton2.configure(
+            text='Eliminar Proveedor y todos sus \nproductos',
+            value="Proveedor",
+            variable=self.obj_eliminar)
+     self.radiobutton2.place(anchor="w", x=10, y=95)
+
+     self.radiobutton3 = ttk.Radiobutton(self.frame_eliminar_1)
+     self.radiobutton3.configure(
+            text='Eliminar todos los productos \ncon el codigo seleccionado',
+            value="Todos los productos",
+            variable=self.obj_eliminar)
+     self.radiobutton3.place(anchor="w", x=10, y=145)
+    
+     self.btn_cancelar= ttk.Button(self.ventana_eliminar)
+     self.btn_cancelar.configure(text='Cancelar', command= self.ventana_eliminar.destroy)
+     self.btn_cancelar.pack(side="bottom")
+
+     self.btn_continuar = ttk.Button(self.ventana_eliminar)
+     self.btn_continuar.configure(text='Continuar', command= self.continuar_Button)
+     self.btn_continuar.pack(side="bottom")
+
+     # Centrar la ventana emergente en la pantalla
+     self.centra(self.ventana_eliminar, 350, 350)
+
+  def continuar_Button(self):
+     item=self.treeProductos.item(self.treeProductos.selection())
+
+     if self.obj_eliminar.get()=='Producto':
+        text_warning= f'Eliminar el registro del producto {item["values"][0]}, \ncorrespondiente al proveedor {item["text"]} '
+     elif self.obj_eliminar.get()=='Proveedor':
+        text_warning=f'Eliminar el proveedor {item["text"]} y todos \nlos registros relacionados a él '
+     elif self.obj_eliminar.get()== 'Todos los productos':
+        text_warning=f'Eliminar todos los registros relacionados \nal producto {item["values"][0]} '
+
+     self.warning= self.path + r'\warning.png'
+
+     self.ventana_confirmacion = tk.Toplevel(self.ventana_eliminar)
+     self.ventana_confirmacion.configure(
+            background="#ffffff",
+            height=200,
+            padx=10,
+            pady=10,
+            width=500)
+     self.ventana_confirmacion.iconbitmap(self.ico)
+     self.ventana_confirmacion.resizable(False, False)
+     self.ventana_confirmacion.title("Warning")
+
+     self.img_warning = tk.PhotoImage(file=self.warning)
+
+     self.lebel1_warning = ttk.Label(self.ventana_confirmacion)
+     self.lebel1_warning.configure(image=self.img_warning)
+     self.lebel1_warning.place(anchor="w", x=20, y=90)
+
+     self.label2_warning = ttk.Label(self.ventana_confirmacion)
+     self.label2_warning.configure(
+            background="#ffffff",
+            font="{Arial} 12 {bold}",
+            text=f'Esta seguro que quiere realizar \nla siquiente acción: \n\n{text_warning}')
+     self.label2_warning.place(anchor="w", x=130, y=60)
+
+     self.btn_yes = ttk.Button(self.ventana_confirmacion)
+     self.btn_yes.configure(text='Si')
+     self.btn_yes.place(anchor="w", width=70, x=243, y=150)
+     self.btn_yes.bind('<Button-1>', lambda _: (self.elimina_Registro(item),self.ventana_eliminar.destroy()))
+
+     self.btn_no = ttk.Button(self.ventana_confirmacion)
+     self.btn_no.configure(text='No', command= self.ventana_eliminar.destroy)
+     self.btn_no.place(anchor="w", x=317, y=150)
+     
+     self.centra(self.ventana_confirmacion,500,200)
      
 if __name__ == "__main__":
     app = Inventario()
