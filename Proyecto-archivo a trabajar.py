@@ -269,6 +269,7 @@ class Inventario:
     self.mainwindow = self.win
 
   #Fución de manejo de eventos del sistema
+<<<<<<< HEAD
   
   def database_build(self):
      producto=''' CREATE TABLE IF NOT EXISTS "Producto" (
@@ -290,6 +291,9 @@ class Inventario:
 
   def run(self):
       self.database_build()
+=======
+  def run(self):
+>>>>>>> c41b2a274a77dbb09cbbcaabe962666b999d7b67
       self.mainwindow.mainloop()
 
   ''' ......... Métodos utilitarios del sistema .............'''
@@ -310,7 +314,111 @@ class Inventario:
         self.btnBuscar.configure(state='disabled')
         self.btnEditar.configure(state='disabled')
         self.btnEliminar.configure(state='disabled')
+<<<<<<< HEAD
 
+=======
+      
+  def abrir_Ventana_Eliminar(self):
+     # Crear una ventana secundaria usando toplevel
+     self.ventana_eliminar = tk.Toplevel(self.win)
+     self.ventana_eliminar.configure(
+            background="#afafaf",
+            padx=10,
+            pady=30)
+     self.ventana_eliminar.geometry("350x350")
+     self.ventana_eliminar.iconbitmap(self.ico)
+     self.ventana_eliminar.resizable(False, False)
+     self.ventana_eliminar.title("Eliminar")
+
+     self.frame_eliminar_1 = ttk.Frame(self.ventana_eliminar)
+     self.frame_eliminar_1.place(
+            anchor="center",
+            height=200,
+            width=250,
+            x=165,
+            y=100)
+
+     self.obj_eliminar = tk.StringVar()
+
+     self.radiobutton1 = ttk.Radiobutton(self.frame_eliminar_1)
+     self.radiobutton1.configure(
+            text='Eliminar eL Producto \nseleccionado',
+            value="Producto",
+            variable=self.obj_eliminar)
+     self.radiobutton1.place(anchor="w", height=50, x=10, y=50)
+     
+     self.radiobutton2 = ttk.Radiobutton(self.frame_eliminar_1)
+     self.radiobutton2.configure(
+            text='Eliminar Proveedor y todos sus \nproductos',
+            value="Proveedor",
+            variable=self.obj_eliminar)
+     self.radiobutton2.place(anchor="w", x=10, y=95)
+
+     self.radiobutton3 = ttk.Radiobutton(self.frame_eliminar_1)
+     self.radiobutton3.configure(
+            text='Eliminar todos los productos \ncon el codigo seleccionado',
+            value="Todos los productos",
+            variable=self.obj_eliminar)
+     self.radiobutton3.place(anchor="w", x=10, y=145)
+    
+     self.btn_cancelar= ttk.Button(self.ventana_eliminar)
+     self.btn_cancelar.configure(text='Cancelar', command= self.ventana_eliminar.destroy)
+     self.btn_cancelar.pack(side="bottom")
+
+     self.btn_continuar = ttk.Button(self.ventana_eliminar)
+     self.btn_continuar.configure(text='Continuar', command= self.continuar_Button)
+     self.btn_continuar.pack(side="bottom")
+
+     # Centrar la ventana emergente en la pantalla
+     self.centra(self.ventana_eliminar, 350, 350)
+
+  def continuar_Button(self):
+     item=self.treeProductos.item(self.treeProductos.selection())
+     text_warning=''
+     if self.obj_eliminar.get()=='Producto':
+        text_warning= f'Eliminar el registro del producto {item["values"][0]}, \ncorrespondiente al proveedor {item["text"]} '
+     elif self.obj_eliminar.get()=='Proveedor':
+        text_warning=f'Eliminar el proveedor {item["text"]} y todos \nlos registros relacionados a él '
+     elif self.obj_eliminar.get()== 'Todos los productos':
+        text_warning=f'Eliminar todos los registros relacionados \nal producto {item["values"][0]} '
+
+     self.warning= self.path + r'\warning.png'
+
+     self.ventana_confirmacion = tk.Toplevel(self.ventana_eliminar)
+     self.ventana_confirmacion.configure(
+            background="#ffffff",
+            height=200,
+            padx=10,
+            pady=10,
+            width=500)
+     self.ventana_confirmacion.iconbitmap(self.ico)
+     self.ventana_confirmacion.resizable(False, False)
+     self.ventana_confirmacion.title("Warning")
+
+     self.img_warning = tk.PhotoImage(file=self.warning)
+
+     self.lebel1_warning = ttk.Label(self.ventana_confirmacion)
+     self.lebel1_warning.configure(image=self.img_warning)
+     self.lebel1_warning.place(anchor="w", x=20, y=90)
+
+     self.label2_warning = ttk.Label(self.ventana_confirmacion)
+     self.label2_warning.configure(
+            background="#ffffff",
+            font="{Arial} 12 {bold}",
+            text=f'Esta seguro que quiere realizar \nla siquiente acción: \n\n{text_warning}')
+     self.label2_warning.place(anchor="w", x=130, y=60)
+
+     self.btn_yes = ttk.Button(self.ventana_confirmacion)
+     self.btn_yes.configure(text='Si')
+     self.btn_yes.place(anchor="w", width=70, x=243, y=150)
+     self.btn_yes.bind('<Button-1>', lambda _: (self.elimina_Registro(item),self.ventana_eliminar.destroy()))
+
+     self.btn_no = ttk.Button(self.ventana_confirmacion)
+     self.btn_no.configure(text='No', command= self.ventana_eliminar.destroy)
+     self.btn_no.place(anchor="w", x=317, y=150)
+     self.centra(self.ventana_confirmacion,500,200)
+     
+>>>>>>> c41b2a274a77dbb09cbbcaabe962666b999d7b67
  # Validaciones del sistema
   def valida_Id_Nit(self, event):
     ''' Valida que la longitud no sea mayor a 15 caracteres'''
@@ -415,25 +523,20 @@ class Inventario:
    
   def validar_ID(self):
      id=self.idNit.get()
-     search_id=self.accion_Buscar('*','Proveedor','''idNitProv = ? ''',(id,)).fetchall()
-     print(search_id)
-     if search_id==[] :
+     search_id=self.accion_Buscar('*','Proveedor','idNitProv= ? ', (id,)).fetchone()
+     if search_id==None :
         prov_Exist=False
-     elif len(search_id)==1:
+     else:
         prov_Exist=True
-     ''' elif len(search_id)>1:
-        prov_Exist='Busqueda inesacta'''
      return prov_Exist
   
   def validar_Cod(self):
      codigo=self.codigo.get()
-     search_cod=self.accion_Buscar('*','Producto',f'''Codigo = ? ''', (codigo,)).fetchall()
-     if search_cod==[]:
+     search_id=self.accion_Buscar('*','Producto','Codigo= ? ', (codigo,)).fetchone()
+     if search_id==None :
         cod_Exist=False
-     elif len(search_cod)==1:
+     else:
         cod_Exist=True
-     '''elif len(search_cod)>1:
-        cod_Exist='Busqueda inesacta' '''
      return cod_Exist
         
   #Rutina de limpieza de datos
@@ -518,16 +621,16 @@ class Inventario:
      id= self.idNit.get()
      cod= self.codigo.get()
      if id != "" and cod =="":
-        if self.validar_ID()==True :
-          search=self.accion_Buscar("*","Producto", f'''IdNit LIKE '{id}%' ORDER BY Codigo ''').fetchall()
+        if self.validar_ID()==True:
+          search=self.accion_Buscar("*","Producto", "IdNit= ? ", (id,)).fetchall()
           self.limpia_Campos()
           self.cargar_Datos_Buscados(search)
           self.cargar_Proveedor(id)
         else:
-           mssg.showerror('Atención!!','.. ¡No se encontro ninguna coincidencio con el nit de provvedor dado! ..')
+           mssg.showerror('Atención!!','.. ¡El proveedor no existe! ..')
      elif id == "" and cod !="":
         if self.validar_Cod()==True:
-           search=self.accion_Buscar("*","Producto", f'''Codigo LIKE '{cod}%' ORDER BY Codigo ''').fetchall()
+           search=self.accion_Buscar("*","Producto", "Codigo= ? ",(cod,)).fetchall()
            self.cargar_Datos_Buscados(search)
            self.limpia_Campos()
            if len(search)>1:
@@ -536,12 +639,12 @@ class Inventario:
               self.cargar_Producto(search[0])
               self.cargar_Proveedor(id)
         else:
-           mssg.showerror('Atención!!','.. ¡No se encontro ninguna coincidencio con el codigo de producto dado! ..')
+           mssg.showerror('Atención!!','.. ¡El producto no existe! ..')
      elif id != "" and cod !="":
         if self.validar_ID()==True and self.validar_Cod()==True:
-           search=self.accion_Buscar("*","Producto", f'''Codigo LIKE '{cod}%' AND IdNit LIKE '{id}%' ORDER BY Codigo ''').fetchall()
-           if search == []:
-              mssg.showerror('Atención!!','.. ¡No se encontro ninguna coincidencia con el codigo y el nit dados! ..')
+           search=self.accion_Buscar("*","Producto", "Codigo= ? AND IdNit= ? ", (cod , id,)).fetchall()
+           if search == None:
+              mssg.showerror('Atención!!','.. ¡El producto no corresponde al proveedor indicado! ..')
            else: 
               self.limpia_Campos()
               self.cargar_Datos_Buscados(search)
