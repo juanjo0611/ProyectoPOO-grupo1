@@ -185,9 +185,7 @@ class Inventario:
     self.fecha.configure(width=30, foreground= "grey")
     self.fecha.place(anchor="nw", x=390, y=170)
 
-    self.fecha.bind('<Enter>', lambda _: self.text_fecha())
-    self.fecha.bind('<Leave>', lambda _: self.borrarFecha())
-    self.fecha.bind('<Leave>', lambda _: self.win.focus())
+    self.fecha.insert(0,'dd/mm/yyyy')
     self.fecha.bind("<FocusIn>", lambda _: self.borrarFecha())
     self.fecha.bind("<KeyRelease>", self.escribirFecha)
     self.fecha.bind("<FocusOut>", self.validaFecha)
@@ -428,9 +426,11 @@ class Inventario:
             self.cantidad.delete(6,tk.END)
             mssg.showerror('Atención!!','.. ¡Máximo 6 caracteres! ..')
              
-        if self.cantidad.get().isdecimal() == False:
-            mssg.showerror('Atención!!','.. ¡Solo números! ..')
-            self.cantidad.delete(0, tk.END)
+        try:
+           float_numero=float(self.cantidad.get())
+        except ValueError:
+           mssg.showerror( '.. Error! ..', ' ¡Cantidad invalida!')
+           self.cantidad.delete(0,tk.END)
   
   def valida_Precio(self, event):
     ''' Valida que la longitud no sea mayor a 9 caracteres y sea int'''
@@ -453,6 +453,10 @@ class Inventario:
          if es_Fecha_Valida(self.fecha.get()) == False and self.fecha.get()!= '':
             mssg.showerror('Atención!!','.. ¡Fecha Inválida! ..')
             self.fecha.delete(0, tk.END)
+
+         if len(self.fecha.get())==0:
+            self.fecha.configure(foreground= "grey")
+            self.fecha.insert(0, 'dd/mm/yyyy')
 
   def escribirFecha(self, event):
     #para que solo se ejecuute si escribe números y tiene menos de diez caracteres
@@ -477,14 +481,6 @@ class Inventario:
       self.fecha.configure(state="normal")
       self.fecha.delete(0, tk.END)
       self.fecha.config(foreground='black')
-
-  def text_fecha(self):
-     if self.fecha.get()=="":
-        self.fecha.configure(foreground='gray')
-        self.fecha.insert(0,"dd/mm/yyyy")
-        self.fecha.configure(state='readonly')
-
-
    
   def validar_ID(self):
      id=self.idNit.get()
@@ -633,6 +629,7 @@ class Inventario:
          self.actualiza = None
          mssg.showinfo(".. Confirmación ..", '.. Ha salido del modo Editar ..')
      self.estado_Buttons_Eliminar(True)
+     self.salir_ventana_eliminar()
    
   def record_Button(self):
      if self.actualiza==None:
@@ -871,59 +868,62 @@ class Inventario:
 
   def continuar_Button(self):
      item=self.treeProductos.item(self.treeProductos.selection())
+     if self.obj_eliminar.get()!='':
+         if self.obj_eliminar.get()=='Producto':
+            text_warning= f'Eliminar el registro del producto {item["values"][0]}, \ncorrespondiente al proveedor {item["text"]} '
+         elif self.obj_eliminar.get()=='Proveedor':
+            text_warning=f'Eliminar el proveedor {item["text"]} y todos \nlos registros relacionados a él '
+         elif self.obj_eliminar.get()== 'Todos los productos':
+            text_warning=f'Eliminar todos los registros relacionados \nal producto {item["values"][0]} '
 
-     if self.obj_eliminar.get()=='Producto':
-        text_warning= f'Eliminar el registro del producto {item["values"][0]}, \ncorrespondiente al proveedor {item["text"]} '
-     elif self.obj_eliminar.get()=='Proveedor':
-        text_warning=f'Eliminar el proveedor {item["text"]} y todos \nlos registros relacionados a él '
-     elif self.obj_eliminar.get()== 'Todos los productos':
-        text_warning=f'Eliminar todos los registros relacionados \nal producto {item["values"][0]} '
+         self.warning= self.path + r'\warning.png'
 
-     self.warning= self.path + r'\warning.png'
+         self.ventana_confirmacion = tk.Toplevel(self.ventana_eliminar)
+         self.ventana_confirmacion.configure(
+               background="#ffffff",
+               height=200,
+               padx=10,
+               pady=10,
+               width=500)
+         self.ventana_confirmacion.protocol("WM_DELETE_WINDOW",lambda: None)
+         self.ventana_confirmacion.grab_set()
+         self.ventana_confirmacion.iconbitmap(self.ico)
+         self.ventana_confirmacion.resizable(False, False)
+         self.ventana_confirmacion.title("Warning")
 
-     self.ventana_confirmacion = tk.Toplevel(self.ventana_eliminar)
-     self.ventana_confirmacion.configure(
-            background="#ffffff",
-            height=200,
-            padx=10,
-            pady=10,
-            width=500)
-     self.ventana_confirmacion.protocol("WM_DELETE_WINDOW",lambda: None)
-     self.ventana_confirmacion.grab_set()
-     self.ventana_confirmacion.iconbitmap(self.ico)
-     self.ventana_confirmacion.resizable(False, False)
-     self.ventana_confirmacion.title("Warning")
+         self.img_warning = tk.PhotoImage(file=self.warning)
 
-     self.img_warning = tk.PhotoImage(file=self.warning)
+         self.lebel1_warning = ttk.Label(self.ventana_confirmacion)
+         self.lebel1_warning.configure(image=self.img_warning)
+         self.lebel1_warning.place(anchor="w", x=20, y=90)
 
-     self.lebel1_warning = ttk.Label(self.ventana_confirmacion)
-     self.lebel1_warning.configure(image=self.img_warning)
-     self.lebel1_warning.place(anchor="w", x=20, y=90)
+         self.label2_warning = ttk.Label(self.ventana_confirmacion)
+         self.label2_warning.configure(
+               background="#ffffff",
+               font="{Arial} 12 {bold}",
+               text=f'Esta seguro que quiere realizar \nla siquiente acción: \n\n{text_warning}')
+         self.label2_warning.place(anchor="w", x=130, y=60)
 
-     self.label2_warning = ttk.Label(self.ventana_confirmacion)
-     self.label2_warning.configure(
-            background="#ffffff",
-            font="{Arial} 12 {bold}",
-            text=f'Esta seguro que quiere realizar \nla siquiente acción: \n\n{text_warning}')
-     self.label2_warning.place(anchor="w", x=130, y=60)
+         self.btn_yes = ttk.Button(self.ventana_confirmacion)
+         self.btn_yes.configure(text='Si')
+         self.btn_yes.place(anchor="w", width=70, x=243, y=150)
+         self.btn_yes.bind('<Button-1>', lambda _: self.btn_Yes(item) )
 
-     self.btn_yes = ttk.Button(self.ventana_confirmacion)
-     self.btn_yes.configure(text='Si')
-     self.btn_yes.place(anchor="w", width=70, x=243, y=150)
-     self.btn_yes.bind('<Button-1>', lambda _: self.btn_Yes(item) )
-
-     self.btn_no = ttk.Button(self.ventana_confirmacion)
-     self.btn_no.configure(text='No')
-     self.btn_no.place(anchor="w", x=317, y=150)
-     self.btn_no.bind('<Button-1>', lambda _: self.btn_No())
+         self.btn_no = ttk.Button(self.ventana_confirmacion)
+         self.btn_no.configure(text='No')
+         self.btn_no.place(anchor="w", x=317, y=150)
+         self.btn_no.bind('<Button-1>', lambda _: self.btn_No())
      
-     self.centra(self.ventana_confirmacion,500,200)
+         self.centra(self.ventana_confirmacion,500,200)
+     else:
+        mssg.showwarning('.. Warning! ..', ' No se ha selecionado ninguna de laas opciones anteriores!, por favor selecione alguna')
+        self.ventana_eliminar.lift(self.win)
 
   def btn_Yes (self,objeto_eliminar):
-     self.elimina_Registro(objeto_eliminar)
      self.ventana_confirmacion.grab_release()
      self.ventana_confirmacion.destroy()
      self.salir_ventana_eliminar()
+     self.elimina_Registro(objeto_eliminar)
      
    
   def btn_No(self):
