@@ -653,39 +653,39 @@ class Inventario:
     relacion=self.accion_Buscar('*','Productos','IdNit = ? AND Codigo = ?',(id_nit, codigo,)).fetchone()
 
     if id_nit=="" and codigo=="":
-       mssg.showerror('Atención!!','.. ¡No se han especificado ningun dato para guardar! ..')
+       mssg.showerror('Atención!!','.. ¡No se ha especificado ningún dato para guardar! ..')
 
     elif id_nit=="" and codigo!="":
-       mssg.showerror('Atención!!','.. ¡No se especifico ningun proveedor para el producto! ..')
+       mssg.showerror('Atención!!','.. ¡No se especificó ningún proveedor para el producto! ..')
 
     elif codigo=="" and id_nit!= "":
        
        if self.validar_ID()==False:
           self.insertar_Proveedor(id_nit, razon_social,ciudad)
-          mssg.showinfo('Confirmación','.. El proveedor a sido registrado correctamente ..')
+          mssg.showinfo('Confirmación','.. El proveedor ha sido registrado correctamente ..')
 
        elif self.validar_ID()==True:
-          mssg.showerror('Atención!!','.. ¡El proveedor ya existe no puede ser insertado otra vez! ..')
+          mssg.showerror('Atención!!','.. ¡El proveedor ya existe y no puede ser insertado otra vez! ..')
 
     elif id_nit!="" and codigo!="":
        if fecha!="":
           if (self.validar_ID()==False and self.validar_Cod()==False) or (self.validar_Cod()==True and self.validar_ID()==False):
              self.insertar_Proveedor(id_nit,razon_social,ciudad)
-             mssg.showinfo('Confirmación','.. El proveedor a sido registrado correctamente ..')
+             mssg.showinfo('Confirmación','.. El proveedor ha sido registrado correctamente ..')
              self.insertar_Producto(id_nit,codigo,descripcion,unidad,cantidad, precio, fecha)
-             mssg.showinfo('Confirmación','.. El producto a sido registrado correctamente ..')
+             mssg.showinfo('Confirmación','.. El producto ha sido registrado correctamente ..')
              datos=self.accion_Buscar("*","Productos"," IdNit = ? AND Codigo = ?",(id_nit,codigo,)).fetchall()
              self.cargar_Datos_Buscados(datos)
 
           elif (self.validar_ID()==True and self.validar_Cod()==False) or (relacion == None):
           
              self.insertar_Producto(id_nit,codigo,descripcion,unidad,cantidad, precio, fecha)
-             mssg.showinfo('Confirmación','.. El producto a sido registrado correctamente ..')
+             mssg.showinfo('Confirmación','.. El producto ha sido registrado correctamente ..')
              datos=self.accion_Buscar("*","Productos"," IdNit = ? AND Codigo = ?",(id_nit,codigo,)).fetchall()
              self.cargar_Datos_Buscados(datos)
 
           elif relacion!= None:  
-             mssg.showerror('Atención!!','.. ¡El producto ya esta relacionado con el proveedor indicado! ..')
+             mssg.showerror('Atención!!','.. ¡El producto ya está relacionado con el proveedor indicado! ..')
        elif fecha=="":
             mssg.showerror('Atención!!','.. ¡Digite una fecha para registrar! ..')
   
@@ -708,7 +708,7 @@ class Inventario:
        dato_cargado=[[item['text'],item['values'][0],item['values'][1],item['values'][2],item['values'][3],item['values'][4],item['values'][5]]]
        self.cargar_Datos_Buscados(dato_cargado)
        mssg.showinfo('Confirmación',
-                     '''.. Se ha activado el modo Editar, puede modificar la información del producto y provvedor seleccionado ..''')
+                     '''.. Se ha activado el modo Editar, puede modificar la información del producto y proveedor seleccionado ..''')
     elif seleccion== ():
        mssg.showerror('Atención!!','.. ¡No se ha seleccionado nada! ..')
 
@@ -738,7 +738,7 @@ class Inventario:
      producto_update=(id_nit,codigo,descripcion,unidad,cantidad,precio,fecha)
      if proveedor == proveedor_update:
         if producto==producto_update:
-           mssg.showinfo('.. Confirmación ..', '.. No se realizo ningun cambio, saliendo del modo Editar ..')
+           mssg.showinfo('.. Confirmación ..', '.. No se realizó ningún cambio, saliendo del modo Editar ..')
         elif producto!=producto_update:
            self.actualizar_Producto((descripcion,unidad,cantidad,precio,fecha,id_nit,codigo,))
            self.cargar_Datos_Buscados([[id_nit,codigo,descripcion,unidad,cantidad,precio,fecha]])
@@ -762,7 +762,7 @@ class Inventario:
         mssg.showerror('.. Error! ..', ' Ya se encuentra abierta una ventana de eliminación!')
         self.ventana_eliminar.lift(self.win)'''
      elif self.treeProductos.selection()==():
-        mssg.showerror('.. Error!..', ' .. No se ha seleccionado ningun registro a eliminar! .. ')
+        mssg.showerror('.. Error!..', ' .. No se ha seleccionado ningún registro a eliminar! .. ')
 
   def estado_Buttons_Eliminar(self,estado):
      if estado==False:
@@ -916,7 +916,7 @@ class Inventario:
      
          self.centra(self.ventana_confirmacion,500,200)
      else:
-        mssg.showwarning('.. Warning! ..', ' No se ha selecionado ninguna de laas opciones anteriores!, por favor selecione alguna')
+        mssg.showwarning('.. Warning! ..', ' No se ha selecionado ninguna de las opciones anteriores!, por favor selecione alguna')
         self.ventana_eliminar.lift(self.win)
 
   def btn_Yes (self,objeto_eliminar):
