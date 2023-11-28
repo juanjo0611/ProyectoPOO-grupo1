@@ -17,27 +17,27 @@ def es_Fecha_Valida(fecha_texto):
    if len(espacios) != 3:
       return False  # La fecha no tiene el formato correcto
     
-   dia = int(espacios[0])
-   mes = int(espacios[1])
-   anio = int(espacios[2])
+   dia = espacios[0]
+   mes = espacios[1]
+   anio = espacios[2]
     
    # Validar el año
-   if not (str(dia).isdigit() and str(mes).isdigit() and str(anio).isdigit()):
+   if not (dia.isdigit() and mes.isdigit() and anio.isdigit()):
       return False  # Los componentes no son números
     
-   if mes < 1 or mes > 12:
+   if int(mes) < 1 or int(mes) > 12:
       return False  # Mes fuera de rango
     
    dias_por_mes = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
     
    # Verificar si es año bisiesto
-   if mes == 2 and ((anio % 4 == 0 and anio % 100 != 0) or (anio % 400 == 0)):
+   if int(mes) == 2 and ((int(anio) % 4 == 0 and int(anio) % 100 != 0) or (int(anio) % 400 == 0)):
       dias_por_mes[1] = 29
     
-   if dia < 1 or dia > dias_por_mes[mes - 1]:
+   if int(dia) < 1 or int(dia) > dias_por_mes[int(mes) - 1]:
       return False  # Día fuera de rango para el mes dado
    
-   fecha_ingresada = datetime(anio, mes, dia).date()
+   fecha_ingresada = datetime(int(anio), int(mes), int(dia)).date()
    if fecha_ingresada > fecha_actual:
       return False  # Si la fecha es futura
    
@@ -50,7 +50,7 @@ class Inventario:
     self.ico=self.path + r'/f2.ico'
     ancho=830;alto=690 # Dimensione de la pantalla
     self.actualiza = None
-    #self.is_open_v_eliminar=None
+    self.is_open_v_eliminar=None
 
     # Crea ventana principal
     self.win = tk.Tk() 
@@ -182,10 +182,11 @@ class Inventario:
 
     #Captura la fecha de compra del Producto
     self.fecha = ttk.Entry(self.frm1)
-    self.fecha.configure(width=30, foreground= "grey")
+    self.fecha.configure(width=30, foreground= "gray")
     self.fecha.place(anchor="nw", x=390, y=170)
 
     self.fecha.insert(0,'dd/mm/yyyy')
+    self.fecha.configure(state='readonly')
     self.fecha.bind("<FocusIn>", lambda _: self.borrarFecha())
     self.fecha.bind("<KeyRelease>", self.escribirFecha)
     self.fecha.bind("<FocusOut>", self.validaFecha)
@@ -282,7 +283,7 @@ class Inventario:
   
   def database_build(self):
      producto=''' CREATE TABLE IF NOT EXISTS "Productos" (
-	  "IdNit"	VARCHAR(15),
+	  "IdNit"	VARCHAR(15) NOT NULL,
 	  "Codigo"	VARCHAR(15) NOT NULL,
 	  "Descripcion"	VARCHAR,
 	  "Und"	VARCHAR(10),
@@ -311,51 +312,6 @@ class Inventario:
       win.geometry(f'{ancho}x{alto}+{x}+{y}') 
       win.deiconify() # Se usa para restaurar la ventana
    
-  def abrir_Ventana_Treeview(self):
-     # Crear una ventana secundaria usando toplevel
-     self.ventana_Treeview = tk.Toplevel(self.win)
-     self.ventana_Treeview.configure(
-            background="#afafaf",
-            padx=10,
-            pady=30)
-     self.ventana_Treeview.geometry("350x350")
-     self.ventana_Treeview.iconbitmap(self.ico)
-     self.ventana_Treeview.resizable(False, False)
-     self.ventana_Treeview.title("Treeview")
-    
-     #Árbol para mosrtar los datos de la B.D.
-     self.tree = ttk.Treeview(self.ventana_Treeview, style="estilo.Treeview")
-     self.tree.configure(selectmode="extended")
-     self.tree.bind('<Double-Button-1>',lambda _: self.carga_Datos()) 
-
-     # Etiquetas de las columnas para el TreeView
-     self.tree["columns"]=("Codigo","Descripcion","Und","Cantidad","Precio","Fecha")
-     # Características de las columnas del árbol
-     self.tree.column ("#0",          anchor="w",stretch=True,width=3)
-     self.tree.column ("Codigo",      anchor="w",stretch=True,width=3)
-     self.tree.column ("Descripcion", anchor="w",stretch=True,width=150)
-     self.tree.column ("Und",         anchor="w",stretch=True,width=3)
-     self.tree.column ("Cantidad",    anchor="w",stretch=True,width=3)
-     self.tree.column ("Precio",      anchor="w",stretch=True,width=8)
-     self.tree.column ("Fecha",       anchor="w",stretch=True,width=3) 
-
-     # Etiquetas de columnas con los nombres que se mostrarán por cada columna
-     self.tree.heading("#0",          anchor="center", text='ID / Nit')
-     self.tree.heading("Codigo",      anchor="center", text='Código')
-     self.tree.heading("Descripcion", anchor="center", text='Descripción')
-     self.tree.heading("Und",         anchor="center", text='Unidad')
-     self.tree.heading("Cantidad",    anchor="center", text='Cantidad')
-     self.tree.heading("Precio",      anchor="center", text='Precio')
-     self.tree.heading("Fecha",       anchor="center", text='Fecha')
-
-     #Carga los datos en treeProductos
-     self.tree.place(anchor="nw", height=400, width=790, x=2, y=230)
-
-     #Scrollbar en el eje Y de treeProductos
-     self.scrollbary=ttk.Scrollbar(self.tree, orient='vertical', command=self.tree.yview)
-     self.tree.configure(yscroll=self.scrollbary.set)
-     self.scrollbary.place(x=778, y=25, height=478)  
-     
  # Validaciones del sistema
   def valida_Id_Nit(self, event):
     ''' Valida que la longitud no sea mayor a 15 caracteres'''
@@ -448,32 +404,45 @@ class Inventario:
             
 
   def validaFecha(self, event):  
-      '''Valida que la fecha sea válida'''
+      '''Valida que la fecha sea válida o pone el fomato de fecha'''
       if event.char:
          if es_Fecha_Valida(self.fecha.get()) == False and self.fecha.get()!= '':
             mssg.showerror('Atención!!','.. ¡Fecha Inválida! ..')
             self.fecha.delete(0, tk.END)
-
          if len(self.fecha.get())==0:
             self.fecha.configure(foreground= "grey")
             self.fecha.insert(0, 'dd/mm/yyyy')
+            self.fecha.configure(state='readonly')
 
   def escribirFecha(self, event):
     #para que solo se ejecuute si escribe números y tiene menos de diez caracteres
-    if event.char.isdigit() and len(self.fecha.get())<10:
+    fecha=self.fecha.get()
+    if event.char.isdigit() and len(self.fecha.get())<=10:
         
-        texto = self.fecha.get()
         letras = 0
-        for i in texto:
+        for i in fecha:
             letras +=1
 
         if letras == 2:
             self.fecha.insert(2,"/")
         elif letras == 5:
             self.fecha.insert(5,"/")
-    else:
-      return 'break'
-    #se usa el return break para evitar que el evento se propague
+    elif len(fecha)>10:
+       self.fecha.delete(10, tk.END)
+       mssg.showerror('.. Error! ..', 'Limite de caracteres excedido, fecha invalida')
+    elif fecha!='dd/mm/yyyy' or fecha!='':
+       condicion_fecha=None
+       partes_fecha=fecha.split('/')
+       for part in partes_fecha:
+          if part.isdigit() or part=='':
+             condicion_fecha=True
+          else:
+             condicion_fecha=False
+             break
+       if len(partes_fecha)>3 or condicion_fecha==False:
+          self.fecha.delete(0,tk.END)
+          mssg.showerror(' .. Error! ..','  ¡Fecha invalida!  ')
+          
 
   def borrarFecha(self):
 
@@ -522,6 +491,7 @@ class Inventario:
         self.treeProductos.delete(linea)
 
   def cargar_Datos_Treeview(self,db_rows):
+      self.change_Nulls_Fetchall(db_rows)
       for row in db_rows:
          self.treeProductos.insert('',0, text = row[0], values = [row[1],row[2],row[3],row[4],row[5],row[6]])       
            
@@ -544,44 +514,73 @@ class Inventario:
      self.run_Query(delete, valores_de_la_condicion)
   
   def insertar_Proveedor(self, id , razon_social, ciudad):
+    proveedor=[id,razon_social,ciudad]
+    self.change_Emptystring_To_Null(proveedor)
     insert=f''' INSERT INTO Proveedores VALUES (?,?,?)'''
-    self.run_Query(insert, (id, razon_social, ciudad,))
+    self.run_Query(insert, tuple(proveedor))
    
   def insertar_Producto(self, IdNit, Codigo, descripcion, und, cantidad, precio, fecha):
+    producto=[IdNit, Codigo, descripcion, und, cantidad, precio, fecha]
+    self.change_Emptystring_To_Null(producto)
     insert=f''' INSERT INTO Productos VALUES (?,?,?,?,?,?,?)'''
-    self.run_Query(insert, (IdNit, Codigo, descripcion, und, cantidad, precio, fecha,))
+    self.run_Query(insert, tuple(producto))
 
   def actualizar_Proveedor(self, values):
+     self.change_Emptystring_To_Null(values)
      update=''' UPDATE Proveedores 
                 SET Razon_Social = ? , Ciudad = ? WHERE 
                 idNitProv = ? '''
-     self.run_Query(update,values)
+     self.run_Query(update,tuple(values))
 
   def actualizar_Producto(self,values):
+     self.change_Emptystring_To_Null(values)
      update=''' UPDATE Productos 
              SET Descripcion = ? , Und = ? , Cantidad = ? , Precio = ? , Fecha = ? 
              WHERE IdNit = ? AND Codigo = ? '''
-     self.run_Query(update,values)
+     self.run_Query(update,tuple(values))
   
   def cargar_Proveedor(self, id):
-     proveedor=self.accion_Buscar("*","Proveedores","idNitProv= ? " , (id,)).fetchone()
-     self.idNit.insert(0,proveedor[0])
-     self.razonSocial.insert(0,proveedor[1])
-     self.ciudad.insert(0, proveedor[2])
+     proveedor=list(self.accion_Buscar("*","Proveedores","idNitProv= ? " , (id,)).fetchall())
+     self.change_Nulls_Fetchall(proveedor)
+     self.idNit.insert(0,proveedor[0][0])
+     self.razonSocial.insert(0,proveedor[0][1])
+     self.ciudad.insert(0, proveedor[0][2])
   
   def cargar_Producto(self,producto):
+     producto=list(producto)
+     self.change_Nulls_Fetchone(producto)
      self.codigo.insert(0,producto[1])
      self.descripcion.insert(0,producto[2])
      self.unidad.insert(0,producto[3])
      self.cantidad.insert(0,producto[4])
      self.precio.insert(0,producto[5])
+     self.borrarFecha()
      self.fecha.insert(0,producto[6])
 
-     
+  def change_Nulls_Fetchone(self,lista):
+     for item in range(len(lista)):
+        if lista[item]==None:
+           lista[item]=''
+        lista[item]=str(lista[item])
+     return lista
+   
+  def change_Nulls_Fetchall(self, lista):
+     for item in range(len(lista)):
+        lista[item]=list(lista[item])
+        self.change_Nulls_Fetchone(lista[item])
+     return lista
+  
+  def change_Emptystring_To_Null(self,lista):
+     for item in range(len(lista)):
+        if lista[item]=='':
+           lista[item]=None
+
   def search_Button (self):
      id= self.idNit.get()
      cod= self.codigo.get()
-     if id != "" and cod =="":
+     if id=='' and cod == '':
+        mssg.showinfo('Atención', ' No se ha ingresado nada para buscar')
+     elif id != "" and cod =="":
         if self.validar_ID()==True:
           search=self.accion_Buscar("*","Productos", "IdNit= ? ", (id,)).fetchall()
           self.limpia_Campos()
@@ -598,13 +597,13 @@ class Inventario:
               self.codigo.insert(0,cod)
            else:
               self.cargar_Producto(search[0])
-              self.cargar_Proveedor(id)
+              self.cargar_Proveedor(search[0][0])
         else:
            mssg.showerror('Atención!!','.. ¡El producto no existe! ..')
      elif id != "" and cod !="":
         if self.validar_ID()==True and self.validar_Cod()==True:
            search=self.accion_Buscar("*","Productos", "Codigo= ? AND IdNit= ? ", (cod , id,)).fetchall()
-           if search == None:
+           if search == []:
               mssg.showerror('Atención!!','.. ¡El producto no corresponde al proveedor indicado! ..')
            else: 
               self.limpia_Campos()
@@ -625,11 +624,15 @@ class Inventario:
   def cancel_Button_Main_Win(self):
      self.limpiar_Treeview()
      self.limpia_Campos()
+     self.fecha.configure(foreground= "grey")
+     self.fecha.insert(0, 'dd/mm/yyyy')
+     self.fecha.configure(state='readonly')
      if self.actualiza== True:
          self.actualiza = None
          mssg.showinfo(".. Confirmación ..", '.. Ha salido del modo Editar ..')
      self.estado_Buttons_Eliminar(True)
-     self.salir_ventana_eliminar()
+     if self.is_open_v_eliminar==True:
+         self.salir_ventana_eliminar()
    
   def record_Button(self):
      if self.actualiza==None:
@@ -668,7 +671,7 @@ class Inventario:
           mssg.showerror('Atención!!','.. ¡El proveedor ya existe y no puede ser insertado otra vez! ..')
 
     elif id_nit!="" and codigo!="":
-       if fecha!="":
+       if fecha!="" and fecha != 'dd/mm/yyyy':
           if (self.validar_ID()==False and self.validar_Cod()==False) or (self.validar_Cod()==True and self.validar_ID()==False):
              self.insertar_Proveedor(id_nit,razon_social,ciudad)
              mssg.showinfo('Confirmación','.. El proveedor ha sido registrado correctamente ..')
@@ -703,6 +706,7 @@ class Inventario:
        self.unidad.insert(0,item['values'][2])
        self.cantidad.insert(0,item['values'][3])
        self.precio.insert(0,item['values'][4])
+       self.borrarFecha()
        self.fecha.insert(0,item['values'][5])
        self.actualiza=True
        dato_cargado=[[item['text'],item['values'][0],item['values'][1],item['values'][2],item['values'][3],item['values'][4],item['values'][5]]]
@@ -729,38 +733,35 @@ class Inventario:
      codigo = self.codigo.get()
      descripcion = self.descripcion.get()
      unidad = self.unidad.get()
-     cantidad = float(self.cantidad.get())
-     precio = float(self.precio.get())
+     cantidad = self.cantidad.get()
+     precio = self.precio.get()
      fecha = self.fecha.get()
-     proveedor=self.accion_Buscar('*', 'Proveedores', ' idNitProv = ? ', (id_nit,)).fetchone()
-     producto=self.accion_Buscar('*', 'Productos', ' IdNit = ? AND Codigo = ? ', (id_nit, codigo,)).fetchone()
-     proveedor_update=(id_nit,razon_social,ciudad)
-     producto_update=(id_nit,codigo,descripcion,unidad,cantidad,precio,fecha)
+     proveedor=self.change_Nulls_Fetchone(list(self.accion_Buscar('*', 'Proveedores', ' idNitProv = ? ', (id_nit,)).fetchone()))
+     producto=self.change_Nulls_Fetchone(list(self.accion_Buscar('*', 'Productos', ' IdNit = ? AND Codigo = ? ', (id_nit, codigo,)).fetchone()))
+     proveedor_update=[id_nit,razon_social,ciudad]
+     producto_update=[id_nit,codigo,descripcion,unidad,cantidad,precio,fecha]
      if proveedor == proveedor_update:
         if producto==producto_update:
            mssg.showinfo('.. Confirmación ..', '.. No se realizó ningún cambio, saliendo del modo Editar ..')
         elif producto!=producto_update:
-           self.actualizar_Producto((descripcion,unidad,cantidad,precio,fecha,id_nit,codigo,))
+           self.actualizar_Producto([descripcion,unidad,cantidad,precio,fecha,id_nit,codigo])
            self.cargar_Datos_Buscados([[id_nit,codigo,descripcion,unidad,cantidad,precio,fecha]])
            mssg.showinfo('.. Confirmación ..', '.. Producto actualizado ..')
      elif proveedor!=proveedor_update:
-        self.actualizar_Proveedor((razon_social,ciudad,id_nit,))
+        self.actualizar_Proveedor([razon_social,ciudad,id_nit])
         mssg.showinfo('.. Confirmación ..', '.. Proveedor actualizado ..')   
         if producto!=producto_update:
-           self.actualizar_Producto((descripcion,unidad,cantidad,precio,fecha,id_nit,codigo,))
+           self.actualizar_Producto([descripcion,unidad,cantidad,precio,fecha,id_nit,codigo])
            self.cargar_Datos_Buscados([[id_nit,codigo,descripcion,unidad,cantidad,precio,fecha]])
            mssg.showinfo('.. Confirmación ..', '.. Producto actualizado ..')
      self.actualiza=None
      self.limpia_Campos()
 
   def eliminar_Button(self):
-     if self.treeProductos.selection() != (): #and self.is_open_v_eliminar==None:
-        #self.is_open_v_eliminar=True
+     if self.treeProductos.selection() != (): 
+        self.is_open_v_eliminar=True
         self.estado_Buttons_Eliminar(False)
         self.abrir_Ventana_Eliminar()
-        '''elif self.is_open_v_eliminar==True:
-        mssg.showerror('.. Error! ..', ' Ya se encuentra abierta una ventana de eliminación!')
-        self.ventana_eliminar.lift(self.win)'''
      elif self.treeProductos.selection()==():
         mssg.showerror('.. Error!..', ' .. No se ha seleccionado ningún registro a eliminar! .. ')
 
@@ -863,7 +864,7 @@ class Inventario:
      self.ventana_eliminar.destroy()
      self.limpiar_Treeview()
      self.limpia_Campos()
-     #self.is_open_v_eliminar=None
+     self.is_open_v_eliminar=None
      
 
   def continuar_Button(self):
