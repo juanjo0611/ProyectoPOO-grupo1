@@ -20,9 +20,6 @@ def es_Fecha_Valida(fecha_texto):
    dia = espacios[0]
    mes = espacios[1]
    anio = espacios[2]
-
-   if len(dia)!=2 or len(mes)!=2 or len(anio)!=4:
-      return False
     
    # Validar el año
    if not (dia.isdigit() and mes.isdigit() and anio.isdigit()):
@@ -49,9 +46,9 @@ def es_Fecha_Valida(fecha_texto):
 class Inventario:
   def __init__(self, master=None):
     self.path = str(path.dirname(__file__))
-    self.db_name = self.path + r'/BD/Inventario.db'
-    self.ico=self.path + r'/imgs/f2.ico'
-    ancho=830;alto=590 # Dimensione de la pantalla
+    self.db_name = self.path + r'/Inventario.db'
+    self.ico=self.path + r'/f2.ico'
+    ancho=830;alto=690 # Dimensione de la pantalla
     self.actualiza = None
     self.is_open_v_eliminar=None
 
@@ -70,7 +67,7 @@ class Inventario:
     self.win.configure(background="#e0e0e0",font="{Arial} 12 {bold}",
                        height=ancho,labelanchor="n",width=alto)
     self.tabs = ttk.Notebook(self.win)
-    self.tabs.configure(height=550, width=799)
+    self.tabs.configure(height=650, width=799)
 
     #Frame de datos
     self.frm1 = ttk.Frame(self.tabs)
@@ -234,12 +231,12 @@ class Inventario:
     self.treeProductos.heading("Fecha",       anchor="center", text='Fecha')
 
     #Carga los datos en treeProductos
-    self.treeProductos.place(anchor="nw", height=300, width=790, x=2, y=230)
+    self.treeProductos.place(anchor="nw", height=400, width=790, x=2, y=230)
 
     #Scrollbar en el eje Y de treeProductos
     self.scrollbary=ttk.Scrollbar(self.treeProductos, orient='vertical', command=self.treeProductos.yview)
     self.treeProductos.configure(yscroll=self.scrollbary.set)
-    self.scrollbary.place(x=778, y=25, height=300)
+    self.scrollbary.place(x=778, y=25, height=478)
 
     # Título de la pestaña Ingreso de Datos
     self.frm1.pack(side="top")
@@ -276,7 +273,7 @@ class Inventario:
     self.btnCancelar.place(anchor="nw", width=70, x=500, y=20)
 
     #Ubicación del Frame 2
-    self.frm2.place(anchor="nw", height=60, relwidth=1, y=500)
+    self.frm2.place(anchor="nw", height=60, relwidth=1, y=605)
     self.win.pack(anchor="center", side="top")
 
     # widget Principal del sistema
@@ -294,7 +291,7 @@ class Inventario:
 	  "Precio"	DOUBLE,
 	  "Fecha"	DATE,
 	  PRIMARY KEY("Codigo","IdNit") ) '''
-     proveedor='''CREATE TABLE IF NOT EXISTS "Proveedor" (
+     proveedor='''CREATE TABLE IF NOT EXISTS "Proveedores" (
 	  "idNitProv"	VARCHAR NOT NULL UNIQUE,
 	  "Razon_Social"	VARCHAR,
 	  "Ciudad"	VARCHAR,
@@ -456,7 +453,7 @@ class Inventario:
    
   def validar_ID(self):
      id=self.idNit.get()
-     search_id=self.accion_Buscar('*','Proveedor','idNitProv= ? ', (id,)).fetchone()
+     search_id=self.accion_Buscar('*','Proveedores','idNitProv= ? ', (id,)).fetchone()
      if search_id==None :
         prov_Exist=False
      else:
@@ -519,7 +516,7 @@ class Inventario:
   def insertar_Proveedor(self, id , razon_social, ciudad):
     proveedor=[id,razon_social,ciudad]
     self.change_Emptystring_To_Null(proveedor)
-    insert=f''' INSERT INTO Proveedor VALUES (?,?,?)'''
+    insert=f''' INSERT INTO Proveedores VALUES (?,?,?)'''
     self.run_Query(insert, tuple(proveedor))
    
   def insertar_Producto(self, IdNit, Codigo, descripcion, und, cantidad, precio, fecha):
@@ -530,7 +527,7 @@ class Inventario:
 
   def actualizar_Proveedor(self, values):
      self.change_Emptystring_To_Null(values)
-     update=''' UPDATE Proveedor 
+     update=''' UPDATE Proveedores 
                 SET Razon_Social = ? , Ciudad = ? WHERE 
                 idNitProv = ? '''
      self.run_Query(update,tuple(values))
@@ -543,7 +540,7 @@ class Inventario:
      self.run_Query(update,tuple(values))
   
   def cargar_Proveedor(self, id):
-     proveedor=list(self.accion_Buscar("*","Proveedor","idNitProv= ? " , (id,)).fetchall())
+     proveedor=list(self.accion_Buscar("*","Proveedores","idNitProv= ? " , (id,)).fetchall())
      self.change_Nulls_Fetchall(proveedor)
      self.idNit.insert(0,proveedor[0][0])
      self.razonSocial.insert(0,proveedor[0][1])
@@ -669,7 +666,6 @@ class Inventario:
        if self.validar_ID()==False:
           self.insertar_Proveedor(id_nit, razon_social,ciudad)
           mssg.showinfo('Confirmación','.. El proveedor ha sido registrado correctamente ..')
-          self.limpia_Campos
 
        elif self.validar_ID()==True:
           mssg.showerror('Atención!!','.. ¡El proveedor ya existe y no puede ser insertado otra vez! ..')
@@ -683,10 +679,6 @@ class Inventario:
              mssg.showinfo('Confirmación','.. El producto ha sido registrado correctamente ..')
              datos=self.accion_Buscar("*","Productos"," IdNit = ? AND Codigo = ?",(id_nit,codigo,)).fetchall()
              self.cargar_Datos_Buscados(datos)
-             self.limpia_Campos()
-             self.fecha.configure(foreground= "grey")
-             self.fecha.insert(0, 'dd/mm/yyyy')
-             self.fecha.configure(state='readonly')
 
           elif (self.validar_ID()==True and self.validar_Cod()==False) or (relacion == None):
           
@@ -694,14 +686,10 @@ class Inventario:
              mssg.showinfo('Confirmación','.. El producto ha sido registrado correctamente ..')
              datos=self.accion_Buscar("*","Productos"," IdNit = ? AND Codigo = ?",(id_nit,codigo,)).fetchall()
              self.cargar_Datos_Buscados(datos)
-             self.limpia_Campos()
-             self.fecha.configure(foreground= "grey")
-             self.fecha.insert(0, 'dd/mm/yyyy')
-             self.fecha.configure(state='readonly')
 
           elif relacion!= None:  
              mssg.showerror('Atención!!','.. ¡El producto ya está relacionado con el proveedor indicado! ..')
-       elif fecha=="" or fecha == 'dd/mm/yyyy':
+       elif fecha=="":
             mssg.showerror('Atención!!','.. ¡Digite una fecha para registrar! ..')
   
   def carga_Datos(self):
@@ -726,7 +714,7 @@ class Inventario:
        mssg.showinfo('Confirmación',
                      '''.. Se ha activado el modo Editar, puede modificar la información del producto y proveedor seleccionado ..''')
     elif seleccion== ():
-       mssg.showerror('Atención!!','.. ¡No se ha seleccionado nada para editar! ..')
+       mssg.showerror('Atención!!','.. ¡No se ha seleccionado nada! ..')
 
   def estado_Buttons_Editar(self, estado):
      if estado==True:
@@ -748,7 +736,7 @@ class Inventario:
      cantidad = self.cantidad.get()
      precio = self.precio.get()
      fecha = self.fecha.get()
-     proveedor=self.change_Nulls_Fetchone(list(self.accion_Buscar('*', 'Proveedor', ' idNitProv = ? ', (id_nit,)).fetchone()))
+     proveedor=self.change_Nulls_Fetchone(list(self.accion_Buscar('*', 'Proveedores', ' idNitProv = ? ', (id_nit,)).fetchone()))
      producto=self.change_Nulls_Fetchone(list(self.accion_Buscar('*', 'Productos', ' IdNit = ? AND Codigo = ? ', (id_nit, codigo,)).fetchone()))
      proveedor_update=[id_nit,razon_social,ciudad]
      producto_update=[id_nit,codigo,descripcion,unidad,cantidad,precio,fecha]
@@ -803,7 +791,7 @@ class Inventario:
     elif self.obj_eliminar.get()=='Proveedor':
        try:
           self.accion_Eliminar('Productos','IdNit = ? ',(id,))
-          self.accion_Eliminar('Proveedor','idNitProv = ? ', (id,))
+          self.accion_Eliminar('Proveedores','idNitProv = ? ', (id,))
        except:
           mssg.showerror('.. Error! ..', f'Se ha producido un error al tratar de eliminar el proveedor {id} y todos los registros relacionados a él')
        else:
@@ -889,7 +877,7 @@ class Inventario:
          elif self.obj_eliminar.get()== 'Todos los productos':
             text_warning=f'Eliminar todos los registros relacionados \nal producto {item["values"][0]} '
 
-         self.warning= self.path + r'\imgs\warning.png'
+         self.warning= self.path + r'\warning.png'
 
          self.ventana_confirmacion = tk.Toplevel(self.ventana_eliminar)
          self.ventana_confirmacion.configure(
